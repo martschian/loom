@@ -1,0 +1,2 @@
+-- Dev seed is applied manually after creating a test user via signup.
+-- Example: run after signing up as test@example.com in local Supabase Studio.

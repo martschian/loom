@@ -1,0 +1,16 @@
+{
+  "name": "inkwell",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=apps/web",
+    "build": "npm run build --workspace=apps/web",
+    "lint": "npm run lint --workspace=apps/web",
+    "typecheck": "npm run typecheck --workspace=apps/web",
+    "test": "npm run test --workspace=apps/web",
+    "test:e2e": "npm run test:e2e --workspace=apps/web",
+    "test:ci": "npm run test:ci --workspace=apps/web"
+  }
+}
