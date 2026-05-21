@@ -76,6 +76,10 @@ export type Database = {
           role: string
           color: string
           summary: string
+          age: string
+          pronouns: string
+          relationships: string
+          traits: string[]
         }
         Insert: {
           id?: string
@@ -84,6 +88,10 @@ export type Database = {
           role?: string
           color: string
           summary?: string
+          age?: string
+          pronouns?: string
+          relationships?: string
+          traits?: string[]
         }
         Update: {
           id?: string
@@ -92,6 +100,10 @@ export type Database = {
           role?: string
           color?: string
           summary?: string
+          age?: string
+          pronouns?: string
+          relationships?: string
+          traits?: string[]
         }
         Relationships: [
           {

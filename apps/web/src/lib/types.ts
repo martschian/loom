@@ -23,6 +23,10 @@ export interface Character {
   role: string
   color: string
   summary: string
+  age: string
+  pronouns: string
+  relationships: string
+  traits: string[]
 }
 
 export interface Location {
@@ -91,6 +95,10 @@ export interface CharacterInput {
   role: string
   summary: string
   color: string
+  age: string
+  pronouns: string
+  relationships: string
+  traits: string[]
 }
 
 export interface LocationInput {

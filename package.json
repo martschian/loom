@@ -1,5 +1,5 @@
 {
-  "name": "inkwell",
+  "name": "loom",
   "private": true,
   "workspaces": [
     "apps/*"

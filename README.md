@@ -1,4 +1,4 @@
-# Inkwell
+# Loom
 
 Creative writing project planner — manage fiction projects with scene timelines, characters, and locations.
 
@@ -76,7 +76,7 @@ supabase db push
 ## Project structure
 
 ```
-inkwell/
+loom/
 ├── apps/web/          # Vite React frontend
 ├── supabase/          # Migrations, config, seed
 └── .github/workflows/ # CI pipeline

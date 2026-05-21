@@ -20,6 +20,7 @@ export function ProjectPage() {
     updateSettings,
     saveScene,
     deleteScene,
+    reorderScenes,
     saveCharacter,
     deleteCharacter,
     saveLocation,
@@ -155,6 +156,7 @@ export function ProjectPage() {
           project={project}
           onSaveScene={saveScene}
           onDeleteScene={deleteScene}
+          onReorderScenes={reorderScenes}
         />
       )}
       {activeTab === 'characters' && (

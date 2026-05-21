@@ -8,9 +8,20 @@ interface SceneCardProps {
   project: ProjectWithRelations
   onClick: (scene: Scene) => void
   index: number
+  isDragging?: boolean
+  dragHandleRef?: (node: HTMLDivElement | null) => void
+  dragHandleProps?: React.HTMLAttributes<HTMLDivElement>
 }
 
-export function SceneCard({ scene, project, onClick, index }: SceneCardProps) {
+export function SceneCard({
+  scene,
+  project,
+  onClick,
+  index,
+  isDragging,
+  dragHandleRef,
+  dragHandleProps,
+}: SceneCardProps) {
   const [hovered, setHovered] = useState(false)
   const loc = project.locations.find((l) => l.id === scene.location_id)
   const chars = project.characters.filter((c) =>
@@ -22,11 +33,14 @@ export function SceneCard({ scene, project, onClick, index }: SceneCardProps) {
       : '#6b7280'
 
   return (
-    <div className="relative flex">
+    <div className="relative flex" style={{ opacity: isDragging ? 0.4 : 1 }}>
       <div className="flex w-10 shrink-0 flex-col items-center">
         <div
-          className="z-[1] flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white"
+          ref={dragHandleRef}
+          className={`z-[1] flex h-7 w-7 shrink-0 select-none items-center justify-center rounded-full text-[11px] font-bold text-white ${dragHandleRef ? 'cursor-grab active:cursor-grabbing' : ''}`}
           style={{ background: moodColor }}
+          title={dragHandleRef ? 'Drag to reorder' : undefined}
+          {...dragHandleProps}
         >
           {index + 1}
         </div>

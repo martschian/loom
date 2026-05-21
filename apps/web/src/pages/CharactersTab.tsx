@@ -2,7 +2,9 @@ import { useState } from 'react'
 import { CharacterModal } from '@/components/CharacterModal'
 import { Button } from '@/components/ui/Button'
 import { Tag } from '@/components/ui/Tag'
-import type { CharacterInput, ProjectWithRelations } from '@/lib/types'
+import { MOOD_COLORS } from '@/lib/constants'
+import { sortScenes } from '@/lib/utils'
+import type { CharacterInput, Mood, ProjectWithRelations, Scene } from '@/lib/types'
 
 interface CharactersTabProps {
   project: ProjectWithRelations
@@ -37,14 +39,16 @@ export function CharactersTab({
       )}
       <div className="flex flex-col gap-2.5">
         {project.characters.map((c) => {
-          const sceneCount = project.scenes.filter((s) =>
-            s.character_ids.includes(c.id),
-          ).length
+          const scenes = sortScenes(
+            project.scenes.filter((s) => s.character_ids.includes(c.id)),
+          )
           return (
             <CharacterRow
               key={c.id}
               character={c}
-              sceneCount={sceneCount}
+              scenes={scenes}
+              allScenes={project.scenes}
+              project={project}
               onClick={() => setEditing(c)}
             />
           )
@@ -83,54 +87,175 @@ export function CharactersTab({
 
 function CharacterRow({
   character: c,
-  sceneCount,
+  scenes,
+  project,
   onClick,
 }: {
   character: ProjectWithRelations['characters'][0]
-  sceneCount: number
+  scenes: Scene[]
+  allScenes: Scene[]
+  project: ProjectWithRelations
   onClick: () => void
 }) {
   const [hovered, setHovered] = useState(false)
+  const [expanded, setExpanded] = useState(false)
+
   return (
     <div
-      role="button"
-      tabIndex={0}
-      onClick={onClick}
-      onKeyDown={(e) => e.key === 'Enter' && onClick()}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      className="flex cursor-pointer items-start gap-4 rounded-xl border-[1.5px] bg-white p-4 transition-all"
+      className="rounded-xl border-[1.5px] bg-white transition-all"
       style={{
         borderColor: hovered ? c.color : '#e5e7eb',
         boxShadow: hovered ? `0 4px 16px ${c.color}22` : 'none',
       }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
-      <div
-        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full font-serif text-lg font-bold text-white"
-        style={{ background: c.color }}
-      >
-        {c.name[0]}
-      </div>
-      <div className="min-w-0 flex-1">
-        <div className="mb-1 flex items-center gap-2">
-          <h3 className="font-serif text-[15px] font-semibold text-ink">
-            {c.name}
-          </h3>
-          {c.role && <Tag label={c.role} color={c.color} />}
+      {/* Main card row */}
+      <div className="flex items-start gap-4 p-4">
+        {/* Avatar — click to edit */}
+        <button
+          type="button"
+          onClick={onClick}
+          className="mt-0.5 cursor-pointer rounded-full border-none p-0 outline-none"
+          aria-label={`Edit ${c.name}`}
+        >
+          <div
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full font-serif text-lg font-bold text-white"
+            style={{ background: c.color }}
+          >
+            {c.name[0]}
+          </div>
+        </button>
+
+        {/* Main content — click to edit */}
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={onClick}
+          onKeyDown={(e) => e.key === 'Enter' && onClick()}
+          className="min-w-0 flex-1 cursor-pointer text-left"
+        >
+          <div className="mb-1 flex items-center gap-2">
+            <h3 className="font-serif text-[15px] font-semibold text-ink">
+              {c.name}
+            </h3>
+            {c.pronouns && (
+              <span className="text-[12px] text-gray-400">· {c.pronouns}</span>
+            )}
+            {c.role && <Tag label={c.role} color={c.color} />}
+          </div>
+          {c.summary ? (
+            <p className="mb-1.5 text-[13px] leading-relaxed text-gray-600">
+              {c.summary}
+            </p>
+          ) : (
+            <p className="mb-1.5 text-[13px] italic text-gray-400">
+              No summary yet — click to add one.
+            </p>
+          )}
+          {(c.traits ?? []).length > 0 && (
+            <div className="mb-1.5 flex flex-wrap items-center gap-1">
+              {(c.traits ?? []).slice(0, 5).map((trait) => (
+                <span
+                  key={trait}
+                  className="rounded-full px-2.5 py-0.5 text-[11px] font-medium"
+                  style={{
+                    background: `${c.color}18`,
+                    color: c.color,
+                    border: `1px solid ${c.color}33`,
+                  }}
+                >
+                  {trait}
+                </span>
+              ))}
+              {(c.traits ?? []).length > 5 && (
+                <span className="text-[11px] text-gray-400">
+                  +{(c.traits ?? []).length - 5} more
+                </span>
+              )}
+            </div>
+          )}
         </div>
-        {c.summary ? (
-          <p className="mb-1.5 text-[13px] leading-relaxed text-gray-600">
-            {c.summary}
-          </p>
-        ) : (
-          <p className="mb-1.5 text-[13px] italic text-gray-400">
-            No summary yet — click to add one.
-          </p>
+
+        {/* Chevron — expands scene list */}
+        {scenes.length > 0 && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              setExpanded((v) => !v)
+            }}
+            className="flex shrink-0 cursor-pointer flex-col items-end gap-0.5 border-none bg-transparent p-1 text-gray-400 transition-colors hover:text-gray-600"
+            aria-label={expanded ? 'Collapse scenes' : 'Expand scenes'}
+            title={`${scenes.length} ${scenes.length === 1 ? 'scene' : 'scenes'}`}
+          >
+            <span className="text-[11px]">
+              {scenes.length} {scenes.length === 1 ? 'scene' : 'scenes'}
+            </span>
+            <span
+              className="text-[10px] transition-transform duration-200"
+              style={{ display: 'inline-block', transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
+            >
+              ▾
+            </span>
+          </button>
         )}
-        <span className="text-[11px] text-gray-400">
-          Appears in {sceneCount} {sceneCount === 1 ? 'scene' : 'scenes'}
-        </span>
+        {scenes.length === 0 && (
+          <span className="shrink-0 pt-1 text-[11px] text-gray-400">
+            0 scenes
+          </span>
+        )}
       </div>
+
+      {/* Expanded scene list */}
+      {expanded && scenes.length > 0 && (
+        <div className="border-t border-gray-100 px-4 pb-3 pt-2">
+          <ol className="flex flex-col gap-1.5">
+            {scenes.map((scene) => {
+              const moodColor =
+                scene.mood && scene.mood in MOOD_COLORS
+                  ? MOOD_COLORS[scene.mood as Mood]
+                  : '#9ca3af'
+              const loc = project.locations.find(
+                (l) => l.id === scene.location_id,
+              )
+              const globalOrder =
+                project.scenes
+                  .slice()
+                  .sort((a, b) => a.sort_order - b.sort_order)
+                  .findIndex((s) => s.id === scene.id) + 1
+
+              return (
+                <li
+                  key={scene.id}
+                  className="flex items-baseline gap-2.5 rounded-lg px-2 py-1.5 text-[13px]"
+                >
+                  <span
+                    className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white"
+                    style={{ background: moodColor }}
+                  >
+                    {globalOrder}
+                  </span>
+                  <span className="font-medium text-ink">{scene.title}</span>
+                  {loc && (
+                    <span className="text-[11px] text-gray-400">
+                      · {loc.name}
+                    </span>
+                  )}
+                  {scene.mood && (
+                    <span
+                      className="ml-auto shrink-0 text-[11px]"
+                      style={{ color: moodColor }}
+                    >
+                      {scene.mood}
+                    </span>
+                  )}
+                </li>
+              )
+            })}
+          </ol>
+        </div>
+      )}
     </div>
   )
 }

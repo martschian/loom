@@ -9,17 +9,30 @@ import type {
   SceneInput,
 } from '@/lib/types'
 
-const STORAGE_KEY = 'inkwell_data'
+const STORAGE_KEY = 'loom_data'
 
 interface LocalStore {
   profile: Profile
   projects: ProjectWithRelations[]
 }
 
+function migrateStore(store: LocalStore): LocalStore {
+  for (const project of store.projects) {
+    project.characters = project.characters.map((c) => ({
+      ...c,
+      age: c.age ?? '',
+      pronouns: c.pronouns ?? '',
+      relationships: c.relationships ?? '',
+      traits: c.traits ?? [],
+    }))
+  }
+  return store
+}
+
 function loadStore(): LocalStore | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? (JSON.parse(raw) as LocalStore) : null
+    return raw ? migrateStore(JSON.parse(raw) as LocalStore) : null
   } catch {
     return null
   }
@@ -58,6 +71,10 @@ function defaultStore(): LocalStore {
             color: CHAR_COLORS[0],
             summary:
               "A former harbour-keeper's daughter with a rare immunity to cold flame.",
+            age: 'mid-twenties',
+            pronouns: 'she/her',
+            relationships: 'Childhood friend of Maren. Uneasy subject of Oryn\'s attention.',
+            traits: ['redhead', 'determined', 'guarded', 'immunity to cold flame'],
           },
           {
             id: 'c2',
@@ -67,6 +84,10 @@ function defaultStore(): LocalStore {
             color: CHAR_COLORS[1],
             summary:
               'The Flame Regent who rules the Citadel with absolute authority.',
+            age: '',
+            pronouns: 'he/him',
+            relationships: '',
+            traits: ['patient', 'calculating', 'outwardly warm'],
           },
         ],
         locations: [
@@ -209,6 +230,10 @@ export const localStorageAdapter = {
         role: input.role,
         color: input.color,
         summary: input.summary,
+        age: input.age,
+        pronouns: input.pronouns,
+        relationships: input.relationships,
+        traits: input.traits,
       })
     }
     project.updated_at = new Date().toISOString()
@@ -258,6 +283,18 @@ export const localStorageAdapter = {
       ...s,
       location_id: s.location_id === locationId ? null : s.location_id,
     }))
+    project.updated_at = new Date().toISOString()
+    saveStore(store)
+  },
+
+  reorderScenes(projectId: string, orderedIds: string[]) {
+    const store = getOrInit()
+    const project = store.projects.find((p) => p.id === projectId)
+    if (!project) throw new Error('Project not found')
+    orderedIds.forEach((id, index) => {
+      const scene = project.scenes.find((s) => s.id === id)
+      if (scene) scene.sort_order = index
+    })
     project.updated_at = new Date().toISOString()
     saveStore(store)
   },

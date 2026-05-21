@@ -13,7 +13,7 @@ export function AppHeader() {
       <div className="mx-auto flex max-w-[900px] items-center justify-between px-8 py-5">
         <div className="flex items-baseline gap-2.5">
           <Link to="/" className="font-serif text-2xl font-bold tracking-tight text-white no-underline">
-            Inkwell
+            Loom
           </Link>
           <span className="text-xs text-gray-500">creative writing</span>
         </div>

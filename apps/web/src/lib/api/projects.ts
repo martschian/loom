@@ -208,6 +208,16 @@ export async function deleteScene(projectId: string, sceneId: string): Promise<v
   await touchProject(projectId)
 }
 
+export async function reorderScenes(projectId: string, orderedIds: string[]): Promise<void> {
+  const client = await getClient()
+  await Promise.all(
+    orderedIds.map((id, index) =>
+      client.from('scenes').update({ sort_order: index }).eq('id', id),
+    ),
+  )
+  await touchProject(projectId)
+}
+
 export async function upsertCharacter(
   projectId: string,
   input: CharacterInput & { id?: string },
@@ -219,6 +229,10 @@ export async function upsertCharacter(
     role: input.role,
     color: input.color,
     summary: input.summary,
+    age: input.age,
+    pronouns: input.pronouns,
+    relationships: input.relationships,
+    traits: input.traits,
   }
 
   if (input.id) {

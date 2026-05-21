@@ -6,6 +6,46 @@ describe('localStorageAdapter', () => {
     localStorage.clear()
   })
 
+  it('backfills missing fields when loading old-schema localStorage data', () => {
+    // Simulate pre-migration data written without the new character fields
+    const legacyStore = {
+      profile: { id: 'local-user', display_name: 'Old Writer', created_at: '' },
+      projects: [
+        {
+          id: 'p-old',
+          user_id: 'local-user',
+          title: 'Old Project',
+          genre: '',
+          synopsis: '',
+          target_word_count: null,
+          created_at: '',
+          updated_at: '',
+          characters: [
+            {
+              id: 'c-old',
+              project_id: 'p-old',
+              name: 'Legacy Hero',
+              role: 'Protagonist',
+              color: '#7c3aed',
+              summary: 'Existed before migration',
+              // age, pronouns, relationships, traits intentionally absent
+            },
+          ],
+          locations: [],
+          scenes: [],
+        },
+      ],
+    }
+    localStorage.setItem('loom_data', JSON.stringify(legacyStore))
+
+    const project = localStorageAdapter.fetchProject('p-old')!
+    const character = project.characters[0]
+    expect(character.traits).toEqual([])
+    expect(character.age).toBe('')
+    expect(character.pronouns).toBe('')
+    expect(character.relationships).toBe('')
+  })
+
   it('returns default demo project when store is empty', () => {
     const projects = localStorageAdapter.fetchProjects()
     expect(projects.length).toBeGreaterThan(0)
@@ -80,12 +120,8 @@ describe('localStorageAdapter', () => {
 
   it('upserts and deletes characters', () => {
     const project = localStorageAdapter.fetchProjects()[0]
-    localStorageAdapter.upsertCharacter(project.id, {
-      name: 'Hero',
-      role: 'Protagonist',
-      color: '#7c3aed',
-      summary: 'Main character',
-    })
+    const baseChar = { role: 'Protagonist', color: '#7c3aed', summary: 'Main character', age: '', pronouns: 'she/her', relationships: '', traits: ['brave'] }
+    localStorageAdapter.upsertCharacter(project.id, { name: 'Hero', ...baseChar })
     let updated = localStorageAdapter.fetchProject(project.id)!
     const character = updated.characters.find((c) => c.name === 'Hero')!
     expect(character).toBeDefined()
@@ -96,6 +132,10 @@ describe('localStorageAdapter', () => {
       role: 'Protagonist',
       color: '#7c3aed',
       summary: 'Updated',
+      age: '',
+      pronouns: 'she/her',
+      relationships: '',
+      traits: ['brave', 'cunning'],
     })
     updated = localStorageAdapter.fetchProject(project.id)!
     expect(updated.characters.find((c) => c.id === character.id)?.name).toBe(

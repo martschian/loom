@@ -2,10 +2,10 @@ import { expect, test } from '@playwright/test'
 
 test.describe.configure({ mode: 'serial' })
 
-test.describe('Inkwell (local mode)', () => {
+test.describe('Loom (local mode)', () => {
   test('dashboard loads and can open demo project', async ({ page }) => {
     await page.goto('/')
-    await expect(page.getByText('Inkwell').first()).toBeVisible()
+    await expect(page.getByText('Loom').first()).toBeVisible()
     await expect(page.getByText('The Ember Coast')).toBeVisible()
     await page.getByText('The Ember Coast').click()
     await expect(page.getByRole('heading', { name: 'The Ember Coast' })).toBeVisible()

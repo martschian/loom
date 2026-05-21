@@ -62,6 +62,17 @@ export function useProject(projectId: string) {
     onSuccess: invalidate,
   })
 
+  const reorderScenes = useMutation({
+    mutationFn: (orderedIds: string[]) => {
+      if (!isSupabaseConfigured) {
+        localStorageAdapter.reorderScenes(projectId, orderedIds)
+        return Promise.resolve()
+      }
+      return api.reorderScenes(projectId, orderedIds)
+    },
+    onSuccess: invalidate,
+  })
+
   const saveCharacter = useMutation({
     mutationFn: (input: CharacterInput & { id?: string }) => {
       if (!isSupabaseConfigured) {
@@ -112,6 +123,7 @@ export function useProject(projectId: string) {
     updateSettings: updateSettings.mutateAsync,
     saveScene: saveScene.mutateAsync,
     deleteScene: deleteScene.mutateAsync,
+    reorderScenes: reorderScenes.mutateAsync,
     saveCharacter: saveCharacter.mutateAsync,
     deleteCharacter: deleteCharacter.mutateAsync,
     saveLocation: saveLocation.mutateAsync,
