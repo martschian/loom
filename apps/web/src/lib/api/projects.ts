@@ -37,6 +37,31 @@ async function fetchSceneCharacterIds(
   return map
 }
 
+async function fetchSceneMoments(sceneIds: string[]) {
+  const client = await getClient()
+  const map = new Map<string, ProjectWithRelations['scenes'][0]['moments']>()
+  if (sceneIds.length === 0) return map
+
+  const { data, error } = await client
+    .from('scene_character_moments')
+    .select('id, scene_id, character_id, label, sort_order')
+    .in('scene_id', sceneIds)
+    .order('sort_order')
+
+  if (error) throw error
+  for (const row of data ?? []) {
+    const existing = map.get(row.scene_id) ?? []
+    existing.push({
+      id: row.id,
+      character_id: row.character_id,
+      label: row.label,
+      sort_order: row.sort_order,
+    })
+    map.set(row.scene_id, existing)
+  }
+  return map
+}
+
 async function assembleProject(
   project: Project,
 ): Promise<ProjectWithRelations> {
@@ -56,7 +81,10 @@ async function assembleProject(
   if (scenesRes.error) throw scenesRes.error
 
   const sceneIds = (scenesRes.data ?? []).map((s) => s.id)
-  const charMap = await fetchSceneCharacterIds(sceneIds)
+  const [charMap, momentsMap] = await Promise.all([
+    fetchSceneCharacterIds(sceneIds),
+    fetchSceneMoments(sceneIds),
+  ])
 
   return {
     ...project,
@@ -64,8 +92,8 @@ async function assembleProject(
     locations: locationsRes.data ?? [],
     scenes: (scenesRes.data ?? []).map((s) => ({
       ...s,
-      mood: s.mood as ProjectWithRelations['scenes'][0]['mood'],
       character_ids: charMap.get(s.id) ?? [],
+      moments: momentsMap.get(s.id) ?? [],
     })),
   }
 }
@@ -158,7 +186,6 @@ export async function upsertScene(
     title: input.title,
     summary: input.summary,
     location_id: input.location_id || null,
-    mood: input.mood || '',
     word_count: input.word_count,
     pov_character_id: input.pov_character_id ?? null,
   }
@@ -199,6 +226,22 @@ export async function upsertScene(
     if (error) throw error
   }
 
+  await client.from('scene_character_moments').delete().eq('scene_id', sceneId)
+  const moments = (input.moments ?? [])
+    .filter((m) => m.label.trim() && input.character_ids.includes(m.character_id))
+    .map((m, index) => ({
+      scene_id: sceneId,
+      character_id: m.character_id,
+      label: m.label.trim(),
+      sort_order: m.sort_order ?? index,
+    }))
+  if (moments.length > 0) {
+    const { error: momentsError } = await client
+      .from('scene_character_moments')
+      .insert(moments)
+    if (momentsError) throw momentsError
+  }
+
   await touchProject(projectId)
 }
 
@@ -234,6 +277,7 @@ export async function upsertCharacter(
     pronouns: input.pronouns,
     relationships: input.relationships,
     traits: input.traits,
+    arc_summary: input.arc_summary,
   }
 
   if (input.id) {

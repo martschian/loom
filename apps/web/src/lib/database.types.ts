@@ -80,6 +80,7 @@ export type Database = {
           pronouns: string
           relationships: string
           traits: string[]
+          arc_summary: string
         }
         Insert: {
           id?: string
@@ -92,6 +93,7 @@ export type Database = {
           pronouns?: string
           relationships?: string
           traits?: string[]
+          arc_summary?: string
         }
         Update: {
           id?: string
@@ -104,6 +106,7 @@ export type Database = {
           pronouns?: string
           relationships?: string
           traits?: string[]
+          arc_summary?: string
         }
         Relationships: [
           {
@@ -154,7 +157,6 @@ export type Database = {
           title: string
           summary: string
           location_id: string | null
-          mood: string
           word_count: number
           sort_order: number
           pov_character_id: string | null
@@ -165,7 +167,6 @@ export type Database = {
           title: string
           summary?: string
           location_id?: string | null
-          mood?: string
           word_count?: number
           sort_order?: number
           pov_character_id?: string | null
@@ -176,7 +177,6 @@ export type Database = {
           title?: string
           summary?: string
           location_id?: string | null
-          mood?: string
           word_count?: number
           sort_order?: number
           pov_character_id?: string | null
@@ -221,6 +221,45 @@ export type Database = {
           },
           {
             foreignKeyName: 'scene_characters_character_id_fkey'
+            columns: ['character_id']
+            isOneToOne: false
+            referencedRelation: 'characters'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      scene_character_moments: {
+        Row: {
+          id: string
+          scene_id: string
+          character_id: string
+          label: string
+          sort_order: number
+        }
+        Insert: {
+          id?: string
+          scene_id: string
+          character_id: string
+          label: string
+          sort_order?: number
+        }
+        Update: {
+          id?: string
+          scene_id?: string
+          character_id?: string
+          label?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'scene_character_moments_scene_id_fkey'
+            columns: ['scene_id']
+            isOneToOne: false
+            referencedRelation: 'scenes'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'scene_character_moments_character_id_fkey'
             columns: ['character_id']
             isOneToOne: false
             referencedRelation: 'characters'

@@ -24,11 +24,16 @@ function migrateStore(store: LocalStore): LocalStore {
       pronouns: c.pronouns ?? '',
       relationships: c.relationships ?? '',
       traits: c.traits ?? [],
+      arc_summary: c.arc_summary ?? '',
     }))
-    project.scenes = project.scenes.map((s) => ({
-      ...s,
-      pov_character_id: s.pov_character_id ?? null,
-    }))
+    project.scenes = project.scenes.map((s) => {
+      const { mood: _mood, ...rest } = s as typeof s & { mood?: string }
+      return {
+        ...rest,
+        pov_character_id: s.pov_character_id ?? null,
+        moments: s.moments ?? [],
+      }
+    })
   }
   return store
 }
@@ -79,6 +84,8 @@ function defaultStore(): LocalStore {
             pronouns: 'she/her',
             relationships: 'Childhood friend of Maren. Uneasy subject of Oryn\'s attention.',
             traits: ['redhead', 'determined', 'guarded', 'immunity to cold flame'],
+            arc_summary:
+              'A harbour outsider who must choose between safety at the coast and confronting the dying flame.',
           },
           {
             id: 'c2',
@@ -92,6 +99,8 @@ function defaultStore(): LocalStore {
             pronouns: 'he/him',
             relationships: '',
             traits: ['patient', 'calculating', 'outwardly warm'],
+            arc_summary:
+              'Consolidates power as sacred fire wanes, testing whether control can outlast faith.',
           },
         ],
         locations: [
@@ -114,8 +123,15 @@ function defaultStore(): LocalStore {
             pov_character_id: 'c1',
             summary:
               'Lyra docks after weeks at sea. The harbour fires burn low.',
-            mood: 'Mysterious',
             word_count: 940,
+            moments: [
+              {
+                id: 'm1',
+                character_id: 'c1',
+                label: 'Notices the harbour fires burning unnaturally low',
+                sort_order: 0,
+              },
+            ],
           },
         ],
       },
@@ -183,6 +199,17 @@ export const localStorageAdapter = {
     const project = store.projects.find((p) => p.id === projectId)
     if (!project) throw new Error('Project not found')
 
+    const moments = (input.moments ?? [])
+      .filter(
+        (m) => m.label.trim() && input.character_ids.includes(m.character_id),
+      )
+      .map((m, index) => ({
+        id: `m${Date.now()}-${index}`,
+        character_id: m.character_id,
+        label: m.label.trim(),
+        sort_order: m.sort_order ?? index,
+      }))
+
     if (input.id) {
       const idx = project.scenes.findIndex((s) => s.id === input.id)
       if (idx >= 0) {
@@ -190,8 +217,8 @@ export const localStorageAdapter = {
           ...project.scenes[idx],
           ...input,
           location_id: input.location_id || null,
-          mood: input.mood || '',
           pov_character_id: input.pov_character_id ?? null,
+          moments,
         }
       }
     } else {
@@ -201,11 +228,11 @@ export const localStorageAdapter = {
         title: input.title,
         summary: input.summary,
         location_id: input.location_id || null,
-        mood: input.mood || '',
         word_count: input.word_count,
         sort_order: project.scenes.length,
         character_ids: input.character_ids,
         pov_character_id: input.pov_character_id ?? null,
+        moments,
       })
     }
     project.updated_at = new Date().toISOString()
@@ -241,6 +268,7 @@ export const localStorageAdapter = {
         pronouns: input.pronouns,
         relationships: input.relationships,
         traits: input.traits,
+        arc_summary: input.arc_summary,
       })
     }
     project.updated_at = new Date().toISOString()
@@ -255,6 +283,9 @@ export const localStorageAdapter = {
     project.scenes = project.scenes.map((s) => ({
       ...s,
       character_ids: s.character_ids.filter((id) => id !== characterId),
+      pov_character_id:
+        s.pov_character_id === characterId ? null : s.pov_character_id,
+      moments: s.moments.filter((m) => m.character_id !== characterId),
     }))
     project.updated_at = new Date().toISOString()
     saveStore(store)

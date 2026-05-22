@@ -1,15 +1,3 @@
-export type Mood =
-  | 'Joyful'
-  | 'Tense'
-  | 'Mysterious'
-  | 'Ominous'
-  | 'Melancholic'
-  | 'Action'
-  | 'Romantic'
-  | 'Comedic'
-  | 'Hopeful'
-  | 'Dark'
-
 export interface Profile {
   id: string
   display_name: string
@@ -27,7 +15,17 @@ export interface Character {
   pronouns: string
   relationships: string
   traits: string[]
+  arc_summary: string
 }
+
+export interface SceneMoment {
+  id: string
+  character_id: string
+  label: string
+  sort_order: number
+}
+
+export type SceneMomentInput = Pick<SceneMoment, 'character_id' | 'label' | 'sort_order'>
 
 export interface Location {
   id: string
@@ -43,11 +41,11 @@ export interface Scene {
   title: string
   summary: string
   location_id: string | null
-  mood: Mood | ''
   word_count: number
   sort_order: number
   character_ids: string[]
   pov_character_id: string | null
+  moments: SceneMoment[]
 }
 
 export interface Project {
@@ -85,10 +83,10 @@ export interface SceneInput {
   title: string
   summary: string
   location_id: string | null
-  mood: Mood | ''
   word_count: number
   character_ids: string[]
   pov_character_id: string | null
+  moments: SceneMomentInput[]
 }
 
 export interface CharacterInput {
@@ -101,6 +99,7 @@ export interface CharacterInput {
   pronouns: string
   relationships: string
   traits: string[]
+  arc_summary: string
 }
 
 export interface LocationInput {
