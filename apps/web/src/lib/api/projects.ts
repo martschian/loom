@@ -160,6 +160,7 @@ export async function upsertScene(
     location_id: input.location_id || null,
     mood: input.mood || '',
     word_count: input.word_count,
+    pov_character_id: input.pov_character_id ?? null,
   }
 
   let sceneId = input.id

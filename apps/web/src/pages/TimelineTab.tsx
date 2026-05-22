@@ -165,6 +165,7 @@ export function TimelineTab({
                   mood: editingScene.mood,
                   word_count: editingScene.word_count,
                   character_ids: editingScene.character_ids,
+                  pov_character_id: editingScene.pov_character_id,
                 }
               : {}
           }

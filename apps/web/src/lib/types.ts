@@ -47,6 +47,7 @@ export interface Scene {
   word_count: number
   sort_order: number
   character_ids: string[]
+  pov_character_id: string | null
 }
 
 export interface Project {
@@ -87,6 +88,7 @@ export interface SceneInput {
   mood: Mood | ''
   word_count: number
   character_ids: string[]
+  pov_character_id: string | null
 }
 
 export interface CharacterInput {

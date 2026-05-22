@@ -77,29 +77,41 @@ export function SceneCard({
               <Tag label={loc.name} color={loc.color} />
             </div>
           )}
-          {chars.map((c) => (
-            <div
-              key={c.id}
-              className="flex items-center gap-1 rounded-full py-0.5 pl-1.5 pr-2.5"
-              style={{
-                background: `${c.color}18`,
-                border: `1px solid ${c.color}33`,
-              }}
-            >
+          {chars.map((c) => {
+            const isPov = c.id === scene.pov_character_id
+            return (
               <div
-                className="flex h-4 w-4 items-center justify-center rounded-full text-[8px] font-bold text-white"
-                style={{ background: c.color }}
+                key={c.id}
+                className="flex items-center gap-1 rounded-full py-0.5 pl-1.5 pr-2.5"
+                style={{
+                  background: isPov ? `${c.color}28` : `${c.color}18`,
+                  border: `${isPov ? '1.5px' : '1px'} solid ${isPov ? `${c.color}66` : `${c.color}33`}`,
+                }}
               >
-                {c.name[0]}
+                <div
+                  className="flex h-4 w-4 items-center justify-center rounded-full text-[8px] font-bold text-white"
+                  style={{ background: c.color }}
+                >
+                  {c.name[0]}
+                </div>
+                <span
+                  className="text-[11px] font-medium"
+                  style={{ color: c.color }}
+                >
+                  {c.name}
+                </span>
+                {isPov && (
+                  <span
+                    className="ml-0.5 text-[10px]"
+                    title="POV character"
+                    style={{ color: c.color }}
+                  >
+                    👁
+                  </span>
+                )}
               </div>
-              <span
-                className="text-[11px] font-medium"
-                style={{ color: c.color }}
-              >
-                {c.name}
-              </span>
-            </div>
-          ))}
+            )
+          })}
           {scene.word_count > 0 && (
             <span className="ml-auto text-[11px] text-gray-400">
               {scene.word_count.toLocaleString()} words

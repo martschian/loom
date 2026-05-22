@@ -34,6 +34,7 @@ export function SceneModal({
     character_ids: scene.character_ids || [],
     mood: (scene.mood || '') as Mood | '',
     word_count: scene.word_count || 0,
+    pov_character_id: scene.pov_character_id ?? null,
   })
 
   const [showNewCharacter, setShowNewCharacter] = useState(false)
@@ -76,12 +77,17 @@ export function SceneModal({
     setForm((f) => ({ ...f, [k]: v }))
 
   const toggleChar = (id: string) =>
-    set(
-      'character_ids',
-      form.character_ids.includes(id)
-        ? form.character_ids.filter((x) => x !== id)
-        : [...form.character_ids, id],
-    )
+    setForm((f) => {
+      const isOn = f.character_ids.includes(id)
+      return {
+        ...f,
+        character_ids: isOn ? f.character_ids.filter((x) => x !== id) : [...f.character_ids, id],
+        pov_character_id: isOn && f.pov_character_id === id ? null : f.pov_character_id,
+      }
+    })
+
+  const togglePov = (id: string) =>
+    set('pov_character_id', form.pov_character_id === id ? null : id)
 
   const handleSaveNewCharacter = async (input: CharacterInput & { id?: string }) => {
     prevCharIds.current = project.characters.map((c) => c.id)
@@ -170,33 +176,53 @@ export function SceneModal({
             <div className="flex flex-wrap gap-1.5">
               {project.characters.map((c) => {
                 const on = form.character_ids.includes(c.id)
+                const isPov = form.pov_character_id === c.id
                 return (
-                  <button
+                  <div
                     key={c.id}
-                    type="button"
-                    onClick={() => toggleChar(c.id)}
-                    className="flex cursor-pointer items-center gap-1.5 rounded-full py-1 pl-2 pr-3.5 transition-all"
+                    className="flex items-center overflow-hidden rounded-full transition-all"
                     style={{
                       background: on ? `${c.color}22` : 'transparent',
-                      border: `1.5px solid ${on ? c.color : '#e5e7eb'}`,
+                      border: `1.5px solid ${isPov ? c.color : on ? `${c.color}88` : '#e5e7eb'}`,
                     }}
                   >
-                    <div
-                      className="flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold text-white"
-                      style={{ background: c.color }}
+                    <button
+                      type="button"
+                      onClick={() => toggleChar(c.id)}
+                      className="flex cursor-pointer items-center gap-1.5 py-1 pl-2 pr-2.5"
                     >
-                      {c.name[0]}
-                    </div>
-                    <span
-                      className="text-xs"
-                      style={{
-                        color: on ? c.color : '#6b7280',
-                        fontWeight: on ? 600 : 400,
-                      }}
-                    >
-                      {c.name}
-                    </span>
-                  </button>
+                      <div
+                        className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[9px] font-bold text-white"
+                        style={{ background: c.color }}
+                      >
+                        {c.name[0]}
+                      </div>
+                      <span
+                        className="text-xs"
+                        style={{
+                          color: on ? c.color : '#6b7280',
+                          fontWeight: on ? 600 : 400,
+                        }}
+                      >
+                        {c.name}
+                      </span>
+                    </button>
+                    {on && (
+                      <button
+                        type="button"
+                        onClick={() => togglePov(c.id)}
+                        title={isPov ? 'Remove POV' : 'Set as POV character'}
+                        className="flex cursor-pointer items-center border-l pr-2 pl-1.5 py-1 text-[12px] transition-opacity"
+                        style={{
+                          borderColor: `${c.color}44`,
+                          color: isPov ? c.color : '#9ca3af',
+                          opacity: isPov ? 1 : 0.7,
+                        }}
+                      >
+                        👁
+                      </button>
+                    )}
+                  </div>
                 )
               })}
               {project.characters.length === 0 && (
@@ -205,6 +231,11 @@ export function SceneModal({
                 </span>
               )}
             </div>
+            {form.pov_character_id && (
+              <p className="mt-1 text-[11px] text-gray-400">
+                👁 POV character — the scene is written from their perspective
+              </p>
+            )}
           </div>
           <div>
             <Label>WORD COUNT</Label>

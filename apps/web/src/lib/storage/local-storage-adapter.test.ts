@@ -94,6 +94,7 @@ describe('localStorageAdapter', () => {
       mood: '',
       word_count: 100,
       character_ids: [],
+      pov_character_id: null,
     })
     const updated = localStorageAdapter.fetchProject(project.id)!
     expect(updated.scenes.some((s) => s.title === 'Test Scene')).toBe(true)
@@ -107,6 +108,7 @@ describe('localStorageAdapter', () => {
       mood: 'Tense',
       word_count: 200,
       character_ids: [],
+      pov_character_id: null,
     })
     const afterUpdate = localStorageAdapter.fetchProject(project.id)!
     expect(afterUpdate.scenes.find((s) => s.id === scene.id)?.title).toBe(

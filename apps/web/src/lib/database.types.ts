@@ -157,6 +157,7 @@ export type Database = {
           mood: string
           word_count: number
           sort_order: number
+          pov_character_id: string | null
         }
         Insert: {
           id?: string
@@ -167,6 +168,7 @@ export type Database = {
           mood?: string
           word_count?: number
           sort_order?: number
+          pov_character_id?: string | null
         }
         Update: {
           id?: string
@@ -177,6 +179,7 @@ export type Database = {
           mood?: string
           word_count?: number
           sort_order?: number
+          pov_character_id?: string | null
         }
         Relationships: [
           {

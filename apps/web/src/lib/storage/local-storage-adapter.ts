@@ -25,6 +25,10 @@ function migrateStore(store: LocalStore): LocalStore {
       relationships: c.relationships ?? '',
       traits: c.traits ?? [],
     }))
+    project.scenes = project.scenes.map((s) => ({
+      ...s,
+      pov_character_id: s.pov_character_id ?? null,
+    }))
   }
   return store
 }
@@ -107,6 +111,7 @@ function defaultStore(): LocalStore {
             sort_order: 0,
             location_id: 'l1',
             character_ids: ['c1'],
+            pov_character_id: 'c1',
             summary:
               'Lyra docks after weeks at sea. The harbour fires burn low.',
             mood: 'Mysterious',
@@ -186,6 +191,7 @@ export const localStorageAdapter = {
           ...input,
           location_id: input.location_id || null,
           mood: input.mood || '',
+          pov_character_id: input.pov_character_id ?? null,
         }
       }
     } else {
@@ -199,6 +205,7 @@ export const localStorageAdapter = {
         word_count: input.word_count,
         sort_order: project.scenes.length,
         character_ids: input.character_ids,
+        pov_character_id: input.pov_character_id ?? null,
       })
     }
     project.updated_at = new Date().toISOString()
