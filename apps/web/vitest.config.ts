@@ -17,7 +17,11 @@ export default defineConfig({
     exclude: ['**/node_modules/**', '**/e2e/**'],
     coverage: {
       provider: 'v8',
-      include: ['src/lib/utils.ts', 'src/lib/storage/local-storage-adapter.ts'],
+      include: [
+        'src/lib/utils.ts',
+        'src/lib/storage/local-storage-adapter.ts',
+        'src/lib/api/projects.ts',
+      ],
       thresholds: {
         'src/lib/utils.ts': { lines: 80, functions: 80, statements: 80 },
         'src/lib/storage/local-storage-adapter.ts': {
