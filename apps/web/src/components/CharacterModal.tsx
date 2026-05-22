@@ -4,7 +4,7 @@ import { Input, Label, Textarea } from '@/components/ui/FormField'
 import { Modal } from '@/components/ui/Modal'
 import { CharacterArcEditor } from '@/components/CharacterArcEditor'
 import { CHAR_COLORS } from '@/lib/constants'
-import type { CharacterArcInput, CharacterInput } from '@/lib/types'
+import type { CharacterInput } from '@/lib/types'
 
 interface CharacterModalProps {
   character: Partial<CharacterInput> & { id?: string }
@@ -189,7 +189,7 @@ export function CharacterModal({
           <Label>CHARACTER ARC</Label>
           <CharacterArcEditor
             arc={form.arc}
-            onChange={(arc: CharacterArcInput | null) => set('arc', arc)}
+            onChange={(arc) => setForm((f) => ({ ...f, arc }))}
           />
         </div>
 

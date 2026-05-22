@@ -17,10 +17,7 @@ interface LocalStore {
   projects: ProjectWithRelations[]
 }
 
-function syncCharacterArcLocal(
-  characterId: string,
-  arc: CharacterArcInput | null,
-): CharacterArcInput | null {
+function syncCharacterArcLocal(arc: CharacterArcInput | null): CharacterArcInput | null {
   if (!arc?.title.trim()) return null
   return {
     title: arc.title.trim(),
@@ -194,7 +191,7 @@ function applyArcToCharacter(
   character: ProjectWithRelations['characters'][0],
   arc: CharacterArcInput | null,
 ) {
-  const synced = syncCharacterArcLocal(character.id, arc)
+  const synced = syncCharacterArcLocal(arc)
   if (!synced) {
     character.arc = null
     return
@@ -325,32 +322,27 @@ export const localStorageAdapter = {
     const project = store.projects.find((p) => p.id === projectId)
     if (!project) throw new Error('Project not found')
 
+    const { arc, ...characterFields } = input
+
     if (input.id) {
       const idx = project.characters.findIndex((c) => c.id === input.id)
       if (idx >= 0) {
         const existing = project.characters[idx]
         project.characters[idx] = {
           ...existing,
-          ...input,
+          ...characterFields,
           project_id: projectId,
         }
-        applyArcToCharacter(project.characters[idx], input.arc)
+        applyArcToCharacter(project.characters[idx], arc)
       }
     } else {
       const character: ProjectWithRelations['characters'][0] = {
         id: `c${Date.now()}`,
         project_id: projectId,
-        name: input.name,
-        role: input.role,
-        color: input.color,
-        summary: input.summary,
-        age: input.age,
-        pronouns: input.pronouns,
-        relationships: input.relationships,
-        traits: input.traits,
+        ...characterFields,
         arc: null,
       }
-      applyArcToCharacter(character, input.arc)
+      applyArcToCharacter(character, arc)
       project.characters.push(character)
     }
     project.updated_at = new Date().toISOString()
