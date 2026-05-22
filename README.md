@@ -56,6 +56,26 @@ Sign up at `/signup` to create an account. Migrations run automatically on `supa
 | `npm run test:e2e` | End-to-end tests (Playwright) |
 | `npm run test:ci` | Tests with coverage |
 
+### Troubleshooting: `localStorage.clear is not a function`
+
+On **Node.js 22+**, the official Windows/macOS installer may enable experimental web storage with an empty `--localstorage-file`. That defines a global `localStorage` without `clear()`, which overrides jsdom in Vitest and breaks tests.
+
+Check your install:
+
+```bash
+node -e "console.log(typeof localStorage?.clear)"
+```
+
+If this prints `undefined` (not `function`), disable experimental web storage for your user account:
+
+**Windows (PowerShell, persistent):**
+
+```powershell
+[System.Environment]::SetEnvironmentVariable('NODE_OPTIONS', '--no-experimental-webstorage', 'User')
+```
+
+Restart the terminal (and Cursor) afterward. Vitest also sets this flag for test workers in `apps/web/vitest.config.ts`; the setup polyfill in `apps/web/src/test/setup.ts` remains a fallback.
+
 ## Deployment
 
 ### Vercel
