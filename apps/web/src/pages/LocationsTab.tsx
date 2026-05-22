@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { LocationModal } from '@/components/LocationModal'
 import { Button } from '@/components/ui/Button'
-import { MOOD_COLORS } from '@/lib/constants'
+import { getSceneAccentColor } from '@/lib/scene-utils'
 import { sortScenes } from '@/lib/utils'
-import type { LocationInput, Mood, ProjectWithRelations, Scene } from '@/lib/types'
+import type { LocationInput, ProjectWithRelations, Scene } from '@/lib/types'
 
 interface LocationsTabProps {
   project: ProjectWithRelations
@@ -183,10 +183,7 @@ function LocationRow({
         <div className="border-t border-gray-100 px-4 pb-3 pt-2">
           <ol className="flex flex-col gap-1.5">
             {scenes.map((scene) => {
-              const moodColor =
-                scene.mood && scene.mood in MOOD_COLORS
-                  ? MOOD_COLORS[scene.mood as Mood]
-                  : '#9ca3af'
+              const accentColor = getSceneAccentColor(scene, project)
               const chars = project.characters.filter((c) =>
                 scene.character_ids.includes(c.id),
               )
@@ -203,7 +200,7 @@ function LocationRow({
                 >
                   <span
                     className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white"
-                    style={{ background: moodColor }}
+                    style={{ background: accentColor }}
                   >
                     {globalOrder}
                   </span>
@@ -213,12 +210,10 @@ function LocationRow({
                       · {chars.map((c) => c.name).join(', ')}
                     </span>
                   )}
-                  {scene.mood && (
-                    <span
-                      className="ml-auto shrink-0 text-[11px]"
-                      style={{ color: moodColor }}
-                    >
-                      {scene.mood}
+                  {scene.moments.length > 0 && (
+                    <span className="ml-auto shrink-0 text-[11px] text-gray-400">
+                      {scene.moments.length}{' '}
+                      {scene.moments.length === 1 ? 'moment' : 'moments'}
                     </span>
                   )}
                 </li>

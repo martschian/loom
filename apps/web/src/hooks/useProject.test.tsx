@@ -48,7 +48,7 @@ describe('useProject', () => {
       title: 'Hook Scene',
       summary: '',
       location_id: null,
-      mood: '',
+      moments: [],
       word_count: 50,
       character_ids: [],
       pov_character_id: null,

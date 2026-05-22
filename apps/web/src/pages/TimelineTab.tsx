@@ -162,10 +162,10 @@ export function TimelineTab({
                   title: editingScene.title,
                   summary: editingScene.summary,
                   location_id: editingScene.location_id,
-                  mood: editingScene.mood,
                   word_count: editingScene.word_count,
                   character_ids: editingScene.character_ids,
                   pov_character_id: editingScene.pov_character_id,
+                  moments: editingScene.moments,
                 }
               : {}
           }

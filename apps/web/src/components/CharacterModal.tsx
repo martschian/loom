@@ -30,6 +30,7 @@ export function CharacterModal({
     pronouns: character.pronouns || '',
     relationships: character.relationships || '',
     traits: character.traits ?? [],
+    arc_summary: character.arc_summary || '',
   })
   const [traitInput, setTraitInput] = useState('')
 
@@ -180,6 +181,17 @@ export function CharacterModal({
             onChange={(e) => set('summary', e.target.value)}
             placeholder="Who is this character? What drives them?"
             className="min-h-[80px]"
+          />
+        </div>
+
+        {/* Arc */}
+        <div>
+          <Label>ARC SUMMARY</Label>
+          <Textarea
+            value={form.arc_summary}
+            onChange={(e) => set('arc_summary', e.target.value)}
+            placeholder="How does this character change across the story?"
+            className="min-h-[70px]"
           />
         </div>
 

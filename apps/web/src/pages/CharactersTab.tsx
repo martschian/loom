@@ -2,9 +2,9 @@ import { useState } from 'react'
 import { CharacterModal } from '@/components/CharacterModal'
 import { Button } from '@/components/ui/Button'
 import { Tag } from '@/components/ui/Tag'
-import { MOOD_COLORS } from '@/lib/constants'
+import { getSceneAccentColor } from '@/lib/scene-utils'
 import { sortScenes } from '@/lib/utils'
-import type { CharacterInput, Mood, ProjectWithRelations, Scene } from '@/lib/types'
+import type { CharacterInput, ProjectWithRelations, Scene } from '@/lib/types'
 
 interface CharactersTabProps {
   project: ProjectWithRelations
@@ -212,12 +212,12 @@ function CharacterRow({
         <div className="border-t border-gray-100 px-4 pb-3 pt-2">
           <ol className="flex flex-col gap-1.5">
             {scenes.map((scene) => {
-              const moodColor =
-                scene.mood && scene.mood in MOOD_COLORS
-                  ? MOOD_COLORS[scene.mood as Mood]
-                  : '#9ca3af'
+              const accentColor = getSceneAccentColor(scene, project)
               const loc = project.locations.find(
                 (l) => l.id === scene.location_id,
+              )
+              const charMoments = scene.moments.filter(
+                (m) => m.character_id === c.id,
               )
               const globalOrder =
                 project.scenes
@@ -228,28 +228,31 @@ function CharacterRow({
               return (
                 <li
                   key={scene.id}
-                  className="flex items-baseline gap-2.5 rounded-lg px-2 py-1.5 text-[13px]"
+                  className="flex flex-col gap-0.5 rounded-lg px-2 py-1.5 text-[13px]"
                 >
-                  <span
-                    className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white"
-                    style={{ background: moodColor }}
-                  >
-                    {globalOrder}
-                  </span>
-                  <span className="font-medium text-ink">{scene.title}</span>
-                  {loc && (
-                    <span className="text-[11px] text-gray-400">
-                      · {loc.name}
-                    </span>
-                  )}
-                  {scene.mood && (
+                  <div className="flex items-baseline gap-2.5">
                     <span
-                      className="ml-auto shrink-0 text-[11px]"
-                      style={{ color: moodColor }}
+                      className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white"
+                      style={{ background: accentColor }}
                     >
-                      {scene.mood}
+                      {globalOrder}
                     </span>
-                  )}
+                    <span className="font-medium text-ink">{scene.title}</span>
+                    {loc && (
+                      <span className="text-[11px] text-gray-400">
+                        · {loc.name}
+                      </span>
+                    )}
+                  </div>
+                  {charMoments.map((m) => (
+                    <span
+                      key={m.id}
+                      className="ml-7 text-[11px] text-gray-500"
+                      style={{ color: c.color }}
+                    >
+                      {m.label}
+                    </span>
+                  ))}
                 </li>
               )
             })}

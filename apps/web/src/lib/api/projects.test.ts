@@ -83,7 +83,6 @@ describe('projects API', () => {
                 title: 'Opening',
                 summary: '',
                 location_id: null,
-                mood: '',
                 word_count: 100,
                 sort_order: 0,
                 pov_character_id: null,
@@ -96,12 +95,14 @@ describe('projects API', () => {
             data: [{ scene_id: 's1', character_id: 'c1' }],
             error: null,
           }),
+        scene_character_moments: () => chain({ data: [], error: null }),
       }),
     )
 
     const { fetchProject } = await import('@/lib/api/projects')
     const result = await fetchProject('p1')
     expect(result?.scenes[0].character_ids).toEqual(['c1'])
+    expect(result?.scenes[0].moments).toEqual([])
   })
 
   it('createProject inserts and returns empty relations', async () => {
@@ -132,10 +133,12 @@ describe('projects API', () => {
     })
   })
 
-  it('upsertScene updates scene and replaces scene_characters', async () => {
+  it('upsertScene updates scene and replaces scene_characters and moments', async () => {
     const updateEq = vi.fn().mockResolvedValue({ error: null })
     const deleteEq = vi.fn().mockResolvedValue({ error: null })
     const insert = vi.fn().mockResolvedValue({ error: null })
+    const momentsDeleteEq = vi.fn().mockResolvedValue({ error: null })
+    const momentsInsert = vi.fn().mockResolvedValue({ error: null })
     const touchUpdate = vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ error: null }) })
 
     mockFrom.mockImplementation((table: string) => {
@@ -150,6 +153,12 @@ describe('projects API', () => {
           insert,
         }
       }
+      if (table === 'scene_character_moments') {
+        return {
+          delete: vi.fn().mockReturnValue({ eq: momentsDeleteEq }),
+          insert: momentsInsert,
+        }
+      }
       if (table === 'projects') {
         return { update: touchUpdate }
       }
@@ -162,10 +171,12 @@ describe('projects API', () => {
       title: 'Updated',
       summary: 'Summary',
       location_id: null,
-      mood: 'Tense',
       word_count: 200,
       character_ids: ['c1', 'c2'],
       pov_character_id: 'c1',
+      moments: [
+        { character_id: 'c1', label: 'Faces the truth', sort_order: 0 },
+      ],
     })
 
     expect(updateEq).toHaveBeenCalledWith('id', 's1')
@@ -173,6 +184,15 @@ describe('projects API', () => {
     expect(insert).toHaveBeenCalledWith([
       { scene_id: 's1', character_id: 'c1' },
       { scene_id: 's1', character_id: 'c2' },
+    ])
+    expect(momentsDeleteEq).toHaveBeenCalledWith('scene_id', 's1')
+    expect(momentsInsert).toHaveBeenCalledWith([
+      {
+        scene_id: 's1',
+        character_id: 'c1',
+        label: 'Faces the truth',
+        sort_order: 0,
+      },
     ])
   })
 })
