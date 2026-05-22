@@ -1,11 +1,7 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { localStorageAdapter } from '@/lib/storage/local-storage-adapter'
 
 describe('localStorageAdapter', () => {
-  beforeEach(() => {
-    localStorage.clear()
-  })
-
   it('backfills missing fields when loading old-schema localStorage data', () => {
     // Simulate pre-migration data written without the new character fields
     const legacyStore = {

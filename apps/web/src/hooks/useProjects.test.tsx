@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { renderHook, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { useProjects } from '@/hooks/useProjects'
 import { localStorageAdapter } from '@/lib/storage/local-storage-adapter'
 
@@ -26,10 +26,6 @@ function createWrapper() {
 }
 
 describe('useProjects', () => {
-  beforeEach(() => {
-    localStorage.clear()
-  })
-
   it('loads projects from local storage', async () => {
     const { result } = renderHook(() => useProjects(), {
       wrapper: createWrapper(),
