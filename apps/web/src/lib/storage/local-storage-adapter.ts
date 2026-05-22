@@ -1,5 +1,6 @@
 import { CHAR_COLORS, LOC_COLORS } from '@/lib/constants'
 import type {
+  CharacterArcInput,
   CharacterInput,
   LocationInput,
   NewProjectInput,
@@ -16,19 +17,45 @@ interface LocalStore {
   projects: ProjectWithRelations[]
 }
 
+function syncCharacterArcLocal(
+  characterId: string,
+  arc: CharacterArcInput | null,
+): CharacterArcInput | null {
+  if (!arc?.title.trim()) return null
+  return {
+    title: arc.title.trim(),
+    summary: arc.summary,
+    beats: (arc.beats ?? [])
+      .filter((b) => b.label.trim())
+      .map((b, index) => ({
+        ...b,
+        label: b.label.trim(),
+        sort_order: b.sort_order ?? index,
+      })),
+  }
+}
+
 function migrateStore(store: LocalStore): LocalStore {
   for (const project of store.projects) {
-    project.characters = project.characters.map((c) => ({
-      ...c,
-      age: c.age ?? '',
-      pronouns: c.pronouns ?? '',
-      relationships: c.relationships ?? '',
-      traits: c.traits ?? [],
-    }))
-    project.scenes = project.scenes.map((s) => ({
-      ...s,
-      pov_character_id: s.pov_character_id ?? null,
-    }))
+    project.characters = project.characters.map((c) => {
+      const { mood: _m, ...rest } = c as typeof c & { mood?: string }
+      return {
+        ...rest,
+        age: c.age ?? '',
+        pronouns: c.pronouns ?? '',
+        relationships: c.relationships ?? '',
+        traits: c.traits ?? [],
+        arc: c.arc ?? null,
+      }
+    })
+    project.scenes = project.scenes.map((s) => {
+      const { mood: _mood, ...rest } = s as typeof s & { mood?: string }
+      return {
+        ...rest,
+        pov_character_id: s.pov_character_id ?? null,
+        arc_events: s.arc_events ?? [],
+      }
+    })
   }
   return store
 }
@@ -49,6 +76,9 @@ function saveStore(store: LocalStore) {
 function defaultStore(): LocalStore {
   const now = new Date().toISOString()
   const userId = 'local-user'
+  const lyraArcId = 'arc-c1'
+  const beat1 = 'beat-1'
+  const beat2 = 'beat-2'
   return {
     profile: {
       id: userId,
@@ -79,6 +109,18 @@ function defaultStore(): LocalStore {
             pronouns: 'she/her',
             relationships: 'Childhood friend of Maren. Uneasy subject of Oryn\'s attention.',
             traits: ['redhead', 'determined', 'guarded', 'immunity to cold flame'],
+            arc: {
+              id: lyraArcId,
+              character_id: 'c1',
+              title: 'From exile to flame-bearer',
+              summary:
+                'Lyra must accept her immunity and return to the sacred fires she fled.',
+              sort_order: 0,
+              beats: [
+                { id: beat1, arc_id: lyraArcId, label: 'Returns to Cinderport', sort_order: 0 },
+                { id: beat2, arc_id: lyraArcId, label: 'Confronts the dying harbour flame', sort_order: 1 },
+              ],
+            },
           },
           {
             id: 'c2',
@@ -92,6 +134,16 @@ function defaultStore(): LocalStore {
             pronouns: 'he/him',
             relationships: '',
             traits: ['patient', 'calculating', 'outwardly warm'],
+            arc: {
+              id: 'arc-c2',
+              character_id: 'c2',
+              title: 'The regent’s wager',
+              summary: 'Oryn bets that control can outlast faith as the fires fail.',
+              sort_order: 0,
+              beats: [
+                { id: 'beat-o1', arc_id: 'arc-c2', label: 'Tests Lyra’s immunity', sort_order: 0 },
+              ],
+            },
           },
         ],
         locations: [
@@ -114,8 +166,17 @@ function defaultStore(): LocalStore {
             pov_character_id: 'c1',
             summary:
               'Lyra docks after weeks at sea. The harbour fires burn low.',
-            mood: 'Mysterious',
             word_count: 940,
+            arc_events: [
+              {
+                id: 'ev1',
+                scene_id: 's1',
+                character_id: 'c1',
+                beat_id: beat1,
+                note: '',
+                sort_order: 0,
+              },
+            ],
           },
         ],
       },
@@ -127,6 +188,31 @@ function getOrInit(): LocalStore {
   const store = loadStore() ?? defaultStore()
   saveStore(store)
   return store
+}
+
+function applyArcToCharacter(
+  character: ProjectWithRelations['characters'][0],
+  arc: CharacterArcInput | null,
+) {
+  const synced = syncCharacterArcLocal(character.id, arc)
+  if (!synced) {
+    character.arc = null
+    return
+  }
+  const arcId = character.arc?.id ?? `arc-${Date.now()}`
+  character.arc = {
+    id: arcId,
+    character_id: character.id,
+    title: synced.title,
+    summary: synced.summary,
+    sort_order: 0,
+    beats: synced.beats.map((b, index) => ({
+      id: b.id ?? `beat-${Date.now()}-${index}`,
+      arc_id: arcId,
+      label: b.label,
+      sort_order: b.sort_order,
+    })),
+  }
 }
 
 export const localStorageAdapter = {
@@ -183,6 +269,18 @@ export const localStorageAdapter = {
     const project = store.projects.find((p) => p.id === projectId)
     if (!project) throw new Error('Project not found')
 
+    const arc_events = (input.arc_events ?? [])
+      .filter((e) => input.character_ids.includes(e.character_id))
+      .filter((e) => e.beat_id || e.note.trim())
+      .map((e, index) => ({
+        id: `ev${Date.now()}-${index}`,
+        scene_id: input.id ?? '',
+        character_id: e.character_id,
+        beat_id: e.beat_id,
+        note: e.note.trim(),
+        sort_order: e.sort_order ?? index,
+      }))
+
     if (input.id) {
       const idx = project.scenes.findIndex((s) => s.id === input.id)
       if (idx >= 0) {
@@ -190,22 +288,23 @@ export const localStorageAdapter = {
           ...project.scenes[idx],
           ...input,
           location_id: input.location_id || null,
-          mood: input.mood || '',
           pov_character_id: input.pov_character_id ?? null,
+          arc_events: arc_events.map((e) => ({ ...e, scene_id: input.id! })),
         }
       }
     } else {
+      const sceneId = `s${Date.now()}`
       project.scenes.push({
-        id: `s${Date.now()}`,
+        id: sceneId,
         project_id: projectId,
         title: input.title,
         summary: input.summary,
         location_id: input.location_id || null,
-        mood: input.mood || '',
         word_count: input.word_count,
         sort_order: project.scenes.length,
         character_ids: input.character_ids,
         pov_character_id: input.pov_character_id ?? null,
+        arc_events: arc_events.map((e) => ({ ...e, scene_id: sceneId })),
       })
     }
     project.updated_at = new Date().toISOString()
@@ -228,9 +327,17 @@ export const localStorageAdapter = {
 
     if (input.id) {
       const idx = project.characters.findIndex((c) => c.id === input.id)
-      if (idx >= 0) project.characters[idx] = { ...project.characters[idx], ...input, project_id: projectId }
+      if (idx >= 0) {
+        const existing = project.characters[idx]
+        project.characters[idx] = {
+          ...existing,
+          ...input,
+          project_id: projectId,
+        }
+        applyArcToCharacter(project.characters[idx], input.arc)
+      }
     } else {
-      project.characters.push({
+      const character: ProjectWithRelations['characters'][0] = {
         id: `c${Date.now()}`,
         project_id: projectId,
         name: input.name,
@@ -241,7 +348,10 @@ export const localStorageAdapter = {
         pronouns: input.pronouns,
         relationships: input.relationships,
         traits: input.traits,
-      })
+        arc: null,
+      }
+      applyArcToCharacter(character, input.arc)
+      project.characters.push(character)
     }
     project.updated_at = new Date().toISOString()
     saveStore(store)
@@ -255,6 +365,9 @@ export const localStorageAdapter = {
     project.scenes = project.scenes.map((s) => ({
       ...s,
       character_ids: s.character_ids.filter((id) => id !== characterId),
+      pov_character_id:
+        s.pov_character_id === characterId ? null : s.pov_character_id,
+      arc_events: s.arc_events.filter((e) => e.character_id !== characterId),
     }))
     project.updated_at = new Date().toISOString()
     saveStore(store)
