@@ -5,8 +5,8 @@ import {
   testLocalStorage,
 } from '@/test/storage'
 
-// Node 22+ may expose a broken global localStorage when NODE_OPTIONS includes
-// --localstorage-file without a valid path, which shadows jsdom's implementation.
+// Node 22+ (esp. Windows installer) may expose a broken global localStorage that
+// shadows jsdom — e.g. missing clear() when --localstorage-file is invalid.
 if (shouldPolyfillLocalStorage) {
   vi.stubGlobal('localStorage', testLocalStorage)
 }

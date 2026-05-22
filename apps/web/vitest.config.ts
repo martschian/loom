@@ -2,6 +2,15 @@ import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
+import { sanitizeNodeOptions } from './scripts/sanitize-node-options.mjs'
+
+function nodeOptionsEnvForVitest(): Record<string, string> | undefined {
+  const raw = process.env.NODE_OPTIONS
+  if (!raw) return undefined
+  const sanitized = sanitizeNodeOptions(raw)
+  if (sanitized === raw) return undefined
+  return { NODE_OPTIONS: sanitized ?? '' }
+}
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
@@ -14,13 +23,9 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
-    // Node 22+ may enable experimental webstorage with an invalid --localstorage-file,
-    // exposing a broken global localStorage (no clear()) that shadows jsdom.
-    env: {
-      NODE_OPTIONS: [process.env.NODE_OPTIONS, '--no-experimental-webstorage']
-        .filter(Boolean)
-        .join(' '),
-    },
+    // Windows Node 22+ installers may leave webstorage flags in NODE_OPTIONS; Node then
+    // refuses to start workers. Broken global localStorage is handled in setup.ts.
+    ...(nodeOptionsEnvForVitest() ? { env: nodeOptionsEnvForVitest() } : {}),
     exclude: ['**/node_modules/**', '**/e2e/**'],
     coverage: {
       provider: 'v8',

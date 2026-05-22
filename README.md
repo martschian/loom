@@ -66,15 +66,25 @@ Check your install:
 node -e "console.log(typeof localStorage?.clear)"
 ```
 
-If this prints `undefined` (not `function`), disable experimental web storage for your user account:
+Vitest handles this automatically via the setup polyfill in `apps/web/src/test/setup.ts` (no `NODE_OPTIONS` workaround required).
 
-**Windows (PowerShell, persistent):**
+### Troubleshooting: tests hang on `not allowed in NODE_OPTIONS`
+
+If you previously set `NODE_OPTIONS=--no-experimental-webstorage` on Windows (see older docs), **remove it** — current Node builds reject that flag in `NODE_OPTIONS`, so Vitest workers never start and tests appear to hang.
+
+**Windows (PowerShell):**
 
 ```powershell
-[System.Environment]::SetEnvironmentVariable('NODE_OPTIONS', '--no-experimental-webstorage', 'User')
+[System.Environment]::SetEnvironmentVariable('NODE_OPTIONS', $null, 'User')
 ```
 
-Restart the terminal (and Cursor) afterward. Vitest also sets this flag for test workers in `apps/web/vitest.config.ts`; the setup polyfill in `apps/web/src/test/setup.ts` remains a fallback.
+**WSL / Linux shell:**
+
+```bash
+unset NODE_OPTIONS
+```
+
+Restart the terminal (and Cursor) afterward. Until it is removed, **every** `node`/`npm` command fails immediately with that error — not only tests.
 
 ## Deployment
 
