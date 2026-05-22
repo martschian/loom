@@ -18,13 +18,15 @@ import { SceneCard } from '@/components/SceneCard'
 import { SceneModal } from '@/components/SceneModal'
 import { Button } from '@/components/ui/Button'
 import { sortScenes } from '@/lib/utils'
-import type { ProjectWithRelations, Scene, SceneInput } from '@/lib/types'
+import type { CharacterInput, LocationInput, ProjectWithRelations, Scene, SceneInput } from '@/lib/types'
 
 interface TimelineTabProps {
   project: ProjectWithRelations
   onSaveScene: (input: SceneInput & { id?: string }) => Promise<void>
   onDeleteScene: (id: string) => Promise<void>
   onReorderScenes: (orderedIds: string[]) => Promise<void>
+  onSaveCharacter: (input: CharacterInput & { id?: string }) => Promise<void>
+  onSaveLocation: (input: LocationInput & { id?: string }) => Promise<void>
 }
 
 interface SortableSceneCardProps {
@@ -78,6 +80,8 @@ export function TimelineTab({
   onSaveScene,
   onDeleteScene,
   onReorderScenes,
+  onSaveCharacter,
+  onSaveLocation,
 }: TimelineTabProps) {
   const [editingScene, setEditingScene] = useState<Scene | null>(null)
   const [showNewScene, setShowNewScene] = useState(false)
@@ -178,6 +182,8 @@ export function TimelineTab({
             setEditingScene(null)
             setShowNewScene(false)
           }}
+          onSaveCharacter={onSaveCharacter}
+          onSaveLocation={onSaveLocation}
         />
       )}
     </div>

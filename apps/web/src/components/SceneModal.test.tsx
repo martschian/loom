@@ -18,6 +18,8 @@ const project: ProjectWithRelations = {
   scenes: [],
 }
 
+const noop = vi.fn().mockResolvedValue(undefined)
+
 describe('SceneModal', () => {
   it('disables save when title is empty', () => {
     render(
@@ -27,6 +29,8 @@ describe('SceneModal', () => {
         onSave={vi.fn()}
         onDelete={vi.fn()}
         onClose={vi.fn()}
+        onSaveCharacter={noop}
+        onSaveLocation={noop}
       />,
     )
     expect(screen.getByRole('button', { name: 'Add scene' })).toBeDisabled()
@@ -41,6 +45,8 @@ describe('SceneModal', () => {
         onSave={vi.fn()}
         onDelete={vi.fn()}
         onClose={vi.fn()}
+        onSaveCharacter={noop}
+        onSaveLocation={noop}
       />,
     )
     await user.type(screen.getByPlaceholderText('e.g. The Storm Breaks'), 'Opening')
