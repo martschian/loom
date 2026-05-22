@@ -14,10 +14,21 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
+    // Node 22+ may enable experimental webstorage with an invalid --localstorage-file,
+    // exposing a broken global localStorage (no clear()) that shadows jsdom.
+    env: {
+      NODE_OPTIONS: [process.env.NODE_OPTIONS, '--no-experimental-webstorage']
+        .filter(Boolean)
+        .join(' '),
+    },
     exclude: ['**/node_modules/**', '**/e2e/**'],
     coverage: {
       provider: 'v8',
-      include: ['src/lib/utils.ts', 'src/lib/storage/local-storage-adapter.ts'],
+      include: [
+        'src/lib/utils.ts',
+        'src/lib/storage/local-storage-adapter.ts',
+        'src/lib/api/projects.ts',
+      ],
       thresholds: {
         'src/lib/utils.ts': { lines: 80, functions: 80, statements: 80 },
         'src/lib/storage/local-storage-adapter.ts': {

@@ -23,6 +23,11 @@ describe('initials', () => {
     expect(initials('Alice Marlowe')).toBe('AM')
     expect(initials('Bob')).toBe('B')
   })
+
+  it('handles empty and extra whitespace', () => {
+    expect(initials('')).toBe('')
+    expect(initials('  Ada   Lovelace  ')).toBe('AL')
+  })
 })
 
 describe('sortScenes', () => {
@@ -33,6 +38,7 @@ describe('sortScenes', () => {
       { sort_order: 1 } as Scene,
     ]
     expect(sortScenes(scenes).map((s) => s.sort_order)).toEqual([0, 1, 2])
+    expect(scenes.map((s) => s.sort_order)).toEqual([2, 0, 1])
   })
 })
 
@@ -43,6 +49,11 @@ describe('totalWordCount', () => {
       { word_count: 250 } as Scene,
     ]
     expect(totalWordCount(scenes)).toBe(350)
+  })
+
+  it('treats missing word counts as zero', () => {
+    const scenes = [{ word_count: 100 } as Scene, {} as Scene]
+    expect(totalWordCount(scenes)).toBe(100)
   })
 })
 
@@ -59,5 +70,11 @@ describe('wordProgress', () => {
     const result = wordProgress(scenes, null)
     expect(result.pct).toBeNull()
     expect(result.display).toBe('100')
+  })
+
+  it('caps progress percentage at 100', () => {
+    const scenes = [{ word_count: 10_000 } as Scene]
+    const result = wordProgress(scenes, 5000)
+    expect(result.pct).toBe(100)
   })
 })
