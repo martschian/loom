@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { localStorageAdapter } from '@/lib/storage/local-storage-adapter'
 
 describe('localStorageAdapter', () => {
@@ -44,6 +44,53 @@ describe('localStorageAdapter', () => {
     expect(character.age).toBe('')
     expect(character.pronouns).toBe('')
     expect(character.relationships).toBe('')
+  })
+
+  it('backfills missing pov_character_id on legacy scenes', () => {
+    const legacyStore = {
+      profile: { id: 'local-user', display_name: 'Writer', created_at: '' },
+      projects: [
+        {
+          id: 'p-old',
+          user_id: 'local-user',
+          title: 'Old Project',
+          genre: '',
+          synopsis: '',
+          target_word_count: null,
+          created_at: '',
+          updated_at: '',
+          characters: [],
+          locations: [],
+          scenes: [
+            {
+              id: 's-old',
+              project_id: 'p-old',
+              title: 'Legacy Scene',
+              summary: '',
+              location_id: null,
+              mood: '',
+              word_count: 0,
+              sort_order: 0,
+              character_ids: [],
+            },
+          ],
+        },
+      ],
+    }
+    localStorage.setItem('loom_data', JSON.stringify(legacyStore))
+
+    const scene = localStorageAdapter.fetchProject('p-old')!.scenes[0]
+    expect(scene.pov_character_id).toBeNull()
+  })
+
+  it('falls back to default store when localStorage JSON is corrupt', () => {
+    localStorage.setItem('loom_data', '{not valid json')
+    const projects = localStorageAdapter.fetchProjects()
+    expect(projects[0].title).toBe('The Ember Coast')
+  })
+
+  it('returns null for unknown project id', () => {
+    expect(localStorageAdapter.fetchProject('missing-id')).toBeNull()
   })
 
   it('returns default demo project when store is empty', () => {
@@ -149,6 +196,41 @@ describe('localStorageAdapter', () => {
     expect(updated.characters.some((c) => c.id === character.id)).toBe(false)
   })
 
+  it('removes deleted character ids from scene character_ids', () => {
+    const project = localStorageAdapter.fetchProjects()[0]
+    const baseChar = {
+      role: 'Protagonist',
+      color: '#7c3aed',
+      summary: '',
+      age: '',
+      pronouns: '',
+      relationships: '',
+      traits: [] as string[],
+    }
+    localStorageAdapter.upsertCharacter(project.id, { name: 'Linked', ...baseChar })
+    let updated = localStorageAdapter.fetchProject(project.id)!
+    const character = updated.characters.find((c) => c.name === 'Linked')!
+
+    localStorageAdapter.upsertScene(project.id, {
+      title: 'Linked Scene',
+      summary: '',
+      location_id: null,
+      mood: '',
+      word_count: 0,
+      character_ids: [character.id],
+      pov_character_id: null,
+    })
+    updated = localStorageAdapter.fetchProject(project.id)!
+    expect(
+      updated.scenes.find((s) => s.title === 'Linked Scene')?.character_ids,
+    ).toContain(character.id)
+
+    localStorageAdapter.deleteCharacter(project.id, character.id)
+    updated = localStorageAdapter.fetchProject(project.id)!
+    const scene = updated.scenes.find((s) => s.title === 'Linked Scene')!
+    expect(scene.character_ids).not.toContain(character.id)
+  })
+
   it('upserts and deletes locations', () => {
     const project = localStorageAdapter.fetchProjects()[0]
     localStorageAdapter.upsertLocation(project.id, {
@@ -160,8 +242,95 @@ describe('localStorageAdapter', () => {
     const location = updated.locations.find((l) => l.name === 'Castle')!
     expect(location).toBeDefined()
 
+    localStorageAdapter.upsertLocation(project.id, {
+      id: location.id,
+      name: 'Castle Keep',
+      color: '#1e40af',
+      summary: 'The inner keep',
+    })
+    updated = localStorageAdapter.fetchProject(project.id)!
+    expect(updated.locations.find((l) => l.id === location.id)?.name).toBe(
+      'Castle Keep',
+    )
+
     localStorageAdapter.deleteLocation(project.id, location.id)
     updated = localStorageAdapter.fetchProject(project.id)!
     expect(updated.locations.some((l) => l.id === location.id)).toBe(false)
+  })
+
+  it('clears location_id on scenes when a location is deleted', () => {
+    const project = localStorageAdapter.fetchProjects()[0]
+    localStorageAdapter.upsertLocation(project.id, {
+      name: 'Harbour',
+      color: '#1d4ed8',
+      summary: 'The docks',
+    })
+    let updated = localStorageAdapter.fetchProject(project.id)!
+    const location = updated.locations.find((l) => l.name === 'Harbour')!
+
+    localStorageAdapter.upsertScene(project.id, {
+      title: 'Dock Scene',
+      summary: '',
+      location_id: location.id,
+      mood: '',
+      word_count: 0,
+      character_ids: [],
+      pov_character_id: null,
+    })
+    updated = localStorageAdapter.fetchProject(project.id)!
+    expect(
+      updated.scenes.find((s) => s.title === 'Dock Scene')?.location_id,
+    ).toBe(location.id)
+
+    localStorageAdapter.deleteLocation(project.id, location.id)
+    updated = localStorageAdapter.fetchProject(project.id)!
+    expect(
+      updated.scenes.find((s) => s.title === 'Dock Scene')?.location_id,
+    ).toBeNull()
+  })
+
+  it('reorders scenes by ordered id list', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2025-01-01T00:00:00Z'))
+
+    const project = localStorageAdapter.createProject({
+      title: 'Reorder Test',
+      genre: '',
+    })
+    const sceneInput = {
+      summary: '',
+      location_id: null,
+      mood: '',
+      word_count: 0,
+      character_ids: [] as string[],
+      pov_character_id: null,
+    }
+    localStorageAdapter.upsertScene(project.id, { title: 'First', ...sceneInput })
+    vi.advanceTimersByTime(1)
+    localStorageAdapter.upsertScene(project.id, { title: 'Second', ...sceneInput })
+    vi.advanceTimersByTime(1)
+    localStorageAdapter.upsertScene(project.id, { title: 'Third', ...sceneInput })
+    vi.useRealTimers()
+
+    let updated = localStorageAdapter.fetchProject(project.id)!
+    const ids = [...updated.scenes]
+      .sort((a, b) => a.sort_order - b.sort_order)
+      .map((s) => s.id)
+
+    localStorageAdapter.reorderScenes(project.id, [ids[2], ids[0], ids[1]])
+    updated = localStorageAdapter.fetchProject(project.id)!
+    const reordered = [...updated.scenes].sort((a, b) => a.sort_order - b.sort_order)
+    expect(reordered.map((s) => s.title)).toEqual(['Third', 'First', 'Second'])
+  })
+
+  it('throws when operating on unknown project id', () => {
+    expect(() =>
+      localStorageAdapter.updateProjectSettings('bad-id', {
+        title: 'X',
+        genre: '',
+        synopsis: '',
+        target_word_count: null,
+      }),
+    ).toThrow('Project not found')
   })
 })
