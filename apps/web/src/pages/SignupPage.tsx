@@ -12,6 +12,7 @@ export function SignupPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [checkEmail, setCheckEmail] = useState(false)
 
   if (loading) return null
   if (session) return <Navigate to="/" replace />
@@ -20,13 +21,36 @@ export function SignupPage() {
     e.preventDefault()
     setError('')
     setSubmitting(true)
-    const { error: err } = await signUp(email, password, displayName)
+    const { error: err, needsEmailConfirmation } = await signUp(
+      email,
+      password,
+      displayName,
+    )
     setSubmitting(false)
     if (err) {
       setError(err)
+    } else if (needsEmailConfirmation) {
+      setCheckEmail(true)
     } else {
       navigate('/')
     }
+  }
+
+  if (checkEmail) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-6">
+        <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-8 shadow-sm text-center">
+          <h1 className="mb-2 font-serif text-2xl font-bold text-ink">Check your email</h1>
+          <p className="mb-6 text-sm text-gray-500">
+            We sent a confirmation link to <span className="font-medium text-ink">{email}</span>.
+            Click the link to activate your account.
+          </p>
+          <Link to="/login" className="text-sm text-ink underline">
+            Back to sign in
+          </Link>
+        </div>
+      </div>
+    )
   }
 
   return (
