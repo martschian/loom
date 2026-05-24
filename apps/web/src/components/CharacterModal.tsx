@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Input, Label, Textarea } from '@/components/ui/FormField'
 import { Modal } from '@/components/ui/Modal'
+import { CharacterArcEditor } from '@/components/CharacterArcEditor'
 import { CHAR_COLORS } from '@/lib/constants'
 import type { CharacterInput } from '@/lib/types'
 
@@ -21,7 +22,7 @@ export function CharacterModal({
   onClose,
 }: CharacterModalProps) {
   const isNew = !character.id
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<CharacterInput>({
     name: character.name || '',
     role: character.role || '',
     summary: character.summary || '',
@@ -30,6 +31,17 @@ export function CharacterModal({
     pronouns: character.pronouns || '',
     relationships: character.relationships || '',
     traits: character.traits ?? [],
+    arc: character.arc
+      ? {
+          title: character.arc.title,
+          summary: character.arc.summary,
+          beats: character.arc.beats.map((b) => ({
+            id: b.id,
+            label: b.label,
+            sort_order: b.sort_order,
+          })),
+        }
+      : null,
   })
   const [traitInput, setTraitInput] = useState('')
 
@@ -170,6 +182,15 @@ export function CharacterModal({
           <p className="mt-1 text-[11px] text-gray-400">
             Press Enter or comma to add · Backspace to remove last
           </p>
+        </div>
+
+        {/* Character arc */}
+        <div>
+          <Label>CHARACTER ARC</Label>
+          <CharacterArcEditor
+            arc={form.arc}
+            onChange={(arc) => setForm((f) => ({ ...f, arc }))}
+          />
         </div>
 
         {/* Summary */}

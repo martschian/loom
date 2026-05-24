@@ -14,6 +14,7 @@
     "test:ci": "npm run test:ci --workspace=apps/web"
   },
   "devDependencies": {
-    "jsdom": "^27.3.0"
+    "jsdom": "^26.1.0",
+    "supabase": "^2.101.0"
   }
 }

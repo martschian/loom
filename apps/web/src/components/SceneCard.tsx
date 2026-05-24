@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Tag } from '@/components/ui/Tag'
-import { MOOD_COLORS } from '@/lib/constants'
-import type { Mood, ProjectWithRelations, Scene } from '@/lib/types'
+import { formatArcEventLabel, getSceneAccentColor } from '@/lib/scene-utils'
+import type { ProjectWithRelations, Scene } from '@/lib/types'
 
 interface SceneCardProps {
   scene: Scene
@@ -27,10 +27,9 @@ export function SceneCard({
   const chars = project.characters.filter((c) =>
     scene.character_ids.includes(c.id),
   )
-  const moodColor =
-    scene.mood && scene.mood in MOOD_COLORS
-      ? MOOD_COLORS[scene.mood as Mood]
-      : '#6b7280'
+  const accentColor = getSceneAccentColor(scene, project)
+  const visibleEvents = scene.arc_events.slice(0, 2)
+  const extraEvents = scene.arc_events.length - visibleEvents.length
 
   return (
     <div className="relative flex" style={{ opacity: isDragging ? 0.4 : 1 }}>
@@ -38,7 +37,7 @@ export function SceneCard({
         <div
           ref={dragHandleRef}
           className={`z-[1] flex h-7 w-7 shrink-0 select-none items-center justify-center rounded-full text-[11px] font-bold text-white ${dragHandleRef ? 'cursor-grab active:cursor-grabbing' : ''}`}
-          style={{ background: moodColor }}
+          style={{ background: accentColor }}
           title={dragHandleRef ? 'Drag to reorder' : undefined}
           {...dragHandleProps}
         >
@@ -55,15 +54,14 @@ export function SceneCard({
         onMouseLeave={() => setHovered(false)}
         className="mb-4 ml-2 flex-1 cursor-pointer rounded-xl border-[1.5px] bg-white p-3.5 transition-all"
         style={{
-          borderColor: hovered ? moodColor : '#e5e7eb',
-          boxShadow: hovered ? `0 4px 16px ${moodColor}22` : 'none',
+          borderColor: hovered ? accentColor : '#e5e7eb',
+          boxShadow: hovered ? `0 4px 16px ${accentColor}22` : 'none',
         }}
       >
         <div className="mb-2 flex items-start justify-between gap-2">
           <h3 className="font-serif text-[15px] font-semibold leading-snug text-ink">
             {scene.title}
           </h3>
-          {scene.mood && <Tag label={scene.mood} color={moodColor} />}
         </div>
         {scene.summary && (
           <p className="mb-2.5 text-[13px] leading-relaxed text-gray-600">
@@ -77,8 +75,24 @@ export function SceneCard({
               <Tag label={loc.name} color={loc.color} />
             </div>
           )}
+          {visibleEvents.map((event) => {
+            const c = project.characters.find((ch) => ch.id === event.character_id)
+            if (!c) return null
+            return (
+              <Tag
+                key={`${event.character_id}-${event.sort_order}-${event.beat_id ?? event.note}`}
+                label={formatArcEventLabel(event, project)}
+                color={c.color}
+              />
+            )
+          })}
+          {extraEvents > 0 && (
+            <span className="text-[11px] text-gray-400">+{extraEvents} more</span>
+          )}
           {chars.map((c) => {
             const isPov = c.id === scene.pov_character_id
+            const hasEvent = scene.arc_events.some((e) => e.character_id === c.id)
+            if (hasEvent) return null
             return (
               <div
                 key={c.id}

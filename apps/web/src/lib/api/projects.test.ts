@@ -72,7 +72,24 @@ describe('projects API', () => {
     mockFrom.mockImplementation(
       tableRouter({
         projects: () => chain({ data: project, error: null }),
-        characters: () => chain({ data: [], error: null }),
+        characters: () =>
+          chain({
+            data: [
+              {
+                id: 'c1',
+                project_id: 'p1',
+                name: 'Hero',
+                role: '',
+                color: '#7c3aed',
+                summary: '',
+                age: '',
+                pronouns: '',
+                relationships: '',
+                traits: [],
+              },
+            ],
+            error: null,
+          }),
         locations: () => chain({ data: [], error: null }),
         scenes: () =>
           chain({
@@ -83,7 +100,6 @@ describe('projects API', () => {
                 title: 'Opening',
                 summary: '',
                 location_id: null,
-                mood: '',
                 word_count: 100,
                 sort_order: 0,
                 pov_character_id: null,
@@ -96,12 +112,17 @@ describe('projects API', () => {
             data: [{ scene_id: 's1', character_id: 'c1' }],
             error: null,
           }),
+        character_arcs: () => chain({ data: [], error: null }),
+        arc_beats: () => chain({ data: [], error: null }),
+        scene_arc_events: () => chain({ data: [], error: null }),
       }),
     )
 
     const { fetchProject } = await import('@/lib/api/projects')
     const result = await fetchProject('p1')
     expect(result?.scenes[0].character_ids).toEqual(['c1'])
+    expect(result?.scenes[0].arc_events).toEqual([])
+    expect(result?.characters[0]?.arc).toBeNull()
   })
 
   it('createProject inserts and returns empty relations', async () => {
@@ -132,10 +153,12 @@ describe('projects API', () => {
     })
   })
 
-  it('upsertScene updates scene and replaces scene_characters', async () => {
+  it('upsertScene updates scene and replaces scene_characters and arc events', async () => {
     const updateEq = vi.fn().mockResolvedValue({ error: null })
     const deleteEq = vi.fn().mockResolvedValue({ error: null })
     const insert = vi.fn().mockResolvedValue({ error: null })
+    const eventsDeleteEq = vi.fn().mockResolvedValue({ error: null })
+    const eventsInsert = vi.fn().mockResolvedValue({ error: null })
     const touchUpdate = vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ error: null }) })
 
     mockFrom.mockImplementation((table: string) => {
@@ -150,6 +173,12 @@ describe('projects API', () => {
           insert,
         }
       }
+      if (table === 'scene_arc_events') {
+        return {
+          delete: vi.fn().mockReturnValue({ eq: eventsDeleteEq }),
+          insert: eventsInsert,
+        }
+      }
       if (table === 'projects') {
         return { update: touchUpdate }
       }
@@ -162,10 +191,12 @@ describe('projects API', () => {
       title: 'Updated',
       summary: 'Summary',
       location_id: null,
-      mood: 'Tense',
       word_count: 200,
       character_ids: ['c1', 'c2'],
       pov_character_id: 'c1',
+      arc_events: [
+        { character_id: 'c1', beat_id: 'b1', note: '', sort_order: 0 },
+      ],
     })
 
     expect(updateEq).toHaveBeenCalledWith('id', 's1')
@@ -173,6 +204,16 @@ describe('projects API', () => {
     expect(insert).toHaveBeenCalledWith([
       { scene_id: 's1', character_id: 'c1' },
       { scene_id: 's1', character_id: 'c2' },
+    ])
+    expect(eventsDeleteEq).toHaveBeenCalledWith('scene_id', 's1')
+    expect(eventsInsert).toHaveBeenCalledWith([
+      {
+        scene_id: 's1',
+        character_id: 'c1',
+        beat_id: 'b1',
+        note: '',
+        sort_order: 0,
+      },
     ])
   })
 })
