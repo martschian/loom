@@ -22,7 +22,7 @@ export function CharacterModal({
   onClose,
 }: CharacterModalProps) {
   const isNew = !character.id
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<CharacterInput>({
     name: character.name || '',
     role: character.role || '',
     summary: character.summary || '',

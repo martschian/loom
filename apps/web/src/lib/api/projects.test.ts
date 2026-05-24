@@ -72,7 +72,24 @@ describe('projects API', () => {
     mockFrom.mockImplementation(
       tableRouter({
         projects: () => chain({ data: project, error: null }),
-        characters: () => chain({ data: [], error: null }),
+        characters: () =>
+          chain({
+            data: [
+              {
+                id: 'c1',
+                project_id: 'p1',
+                name: 'Hero',
+                role: '',
+                color: '#7c3aed',
+                summary: '',
+                age: '',
+                pronouns: '',
+                relationships: '',
+                traits: [],
+              },
+            ],
+            error: null,
+          }),
         locations: () => chain({ data: [], error: null }),
         scenes: () =>
           chain({

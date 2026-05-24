@@ -3,7 +3,6 @@ import { renderHook, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 import { useProjects } from '@/hooks/useProjects'
-import { localStorageAdapter } from '@/lib/storage/local-storage-adapter'
 
 vi.mock('@/lib/supabase/client', () => ({
   isSupabaseConfigured: false,

@@ -24,8 +24,8 @@ export function createMemoryStorage(): Storage {
 }
 
 function isStorageUsable(storage: Storage | undefined): storage is Storage {
+  if (!storage) return false
   return (
-    Boolean(storage) &&
     typeof storage.getItem === 'function' &&
     typeof storage.setItem === 'function' &&
     typeof storage.clear === 'function'
