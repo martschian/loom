@@ -103,6 +103,19 @@ supabase link --project-ref YOUR_PROJECT_REF
 supabase db push
 ```
 
+### Supabase free tier keepalive
+
+Free Supabase projects pause after 7 days without database activity. A scheduled GitHub Actions workflow (`.github/workflows/supabase-keepalive.yml`) pings your project twice per week to prevent that.
+
+Add these **repository secrets** under GitHub → Settings → Secrets and variables → Actions (same values as the Vercel env vars):
+
+| Secret | Value |
+|--------|-------|
+| `SUPABASE_URL` | Your project URL (`https://xxxx.supabase.co`) |
+| `SUPABASE_ANON_KEY` | Your project anon/public key |
+
+After adding secrets, run the workflow manually once (Actions → Supabase keepalive → Run workflow) to confirm it succeeds.
+
 ## Project structure
 
 ```
