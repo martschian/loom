@@ -64,10 +64,11 @@ export function SceneArcEventsEditor({
                 onChange={(e) => {
                   const nextChar = project.characters.find((c) => c.id === e.target.value)
                   const firstBeat = nextChar?.arc?.beats[0]
+                  const nextBeatId = firstBeat?.id ?? null
                   update(index, {
                     character_id: e.target.value,
-                    beat_id: firstBeat?.id ?? null,
-                    note: '',
+                    beat_id: nextBeatId,
+                    note: nextBeatId === null ? event.note : '',
                   })
                 }}
                 className="w-[130px] shrink-0 text-xs"
