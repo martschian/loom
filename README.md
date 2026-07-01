@@ -54,6 +54,7 @@ Sign up at `/signup` to create an account. Migrations run automatically on `supa
 | `npm run lint` | ESLint |
 | `npm test` | Unit + component tests (Vitest) |
 | `npm run test:e2e` | End-to-end tests (Playwright) |
+| `npm run test:e2e:install` | Install Playwright Chromium + OS deps (first-time setup) |
 | `npm run test:ci` | Tests with coverage |
 
 ### Troubleshooting: `localStorage.clear is not a function`
@@ -86,7 +87,38 @@ unset NODE_OPTIONS
 
 Restart the terminal (and Cursor) afterward. Until it is removed, **every** `node`/`npm` command fails immediately with that error — not only tests.
 
-## Deployment
+### Troubleshooting: E2E tests on WSL / Linux
+
+Playwright needs **browser binaries** and **system libraries**. CI installs both; locally you must do the same once.
+
+**Symptoms:**
+- `Executable doesn't exist at .../chromium_headless_shell-...` → browsers not installed
+- `libnspr4.so: cannot open shared object file` → OS deps missing (common on fresh WSL)
+
+**Fix (from repo root):**
+
+```bash
+npm run test:e2e:install
+```
+
+This runs `playwright install chromium --with-deps` (same as CI). On WSL/Linux it uses `sudo` to install packages like `libnspr4` via apt — enter your password when prompted.
+
+If browsers are already installed but deps are still missing:
+
+```bash
+cd apps/web
+sudo npx playwright install-deps chromium
+```
+
+Then run:
+
+```bash
+npm run test:e2e
+```
+
+E2E tests start a dev server automatically and run in localStorage mode (no Supabase required). Your `apps/web/.env.local` is ignored for e2e — the Playwright config clears Supabase env vars, same as CI.
+
+If tests still show the sign-in page, stop any dev server already running on port 5173 (Playwright reuses it when `CI` is unset).
 
 ### Vercel
 

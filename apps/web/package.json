@@ -12,7 +12,8 @@
     "test": "vitest run --config vitest.config.ts",
     "test:watch": "vitest --config vitest.config.ts",
     "test:ci": "vitest run --config vitest.config.ts --coverage",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:e2e:install": "playwright install chromium --with-deps"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

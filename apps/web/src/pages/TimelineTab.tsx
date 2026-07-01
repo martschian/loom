@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import {
   DndContext,
   PointerSensor,
@@ -85,13 +85,15 @@ export function TimelineTab({
 }: TimelineTabProps) {
   const [editingScene, setEditingScene] = useState<Scene | null>(null)
   const [showNewScene, setShowNewScene] = useState(false)
-  const [orderedIds, setOrderedIds] = useState<string[]>(() =>
-    sortScenes(project.scenes).map((s) => s.id),
-  )
+  const canonicalIds = sortScenes(project.scenes).map((s) => s.id)
+  const canonicalKey = canonicalIds.join('|')
+  const [orderedIds, setOrderedIds] = useState(canonicalIds)
+  const [prevCanonicalKey, setPrevCanonicalKey] = useState(canonicalKey)
 
-  useEffect(() => {
-    setOrderedIds(sortScenes(project.scenes).map((s) => s.id))
-  }, [project.scenes])
+  if (canonicalKey !== prevCanonicalKey) {
+    setPrevCanonicalKey(canonicalKey)
+    setOrderedIds(canonicalIds)
+  }
 
   const scenes = orderedIds
     .map((id) => project.scenes.find((s) => s.id === id))

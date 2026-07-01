@@ -11,6 +11,7 @@
     "typecheck": "npm run typecheck --workspace=apps/web",
     "test": "npm run test --workspace=apps/web",
     "test:e2e": "npm run test:e2e --workspace=apps/web",
+    "test:e2e:install": "npm run test:e2e:install --workspace=apps/web",
     "test:ci": "npm run test:ci --workspace=apps/web"
   },
   "devDependencies": {

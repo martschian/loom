@@ -35,9 +35,10 @@ function syncCharacterArcLocal(arc: CharacterArcInput | null): CharacterArcInput
 function migrateStore(store: LocalStore): LocalStore {
   for (const project of store.projects) {
     project.characters = project.characters.map((c) => {
-      const { mood: _m, ...rest } = c as typeof c & { mood?: string }
+      const legacy = { ...c } as typeof c & { mood?: string }
+      delete legacy.mood
       return {
-        ...rest,
+        ...legacy,
         age: c.age ?? '',
         pronouns: c.pronouns ?? '',
         relationships: c.relationships ?? '',
@@ -46,9 +47,10 @@ function migrateStore(store: LocalStore): LocalStore {
       }
     })
     project.scenes = project.scenes.map((s) => {
-      const { mood: _mood, ...rest } = s as typeof s & { mood?: string }
+      const legacy = { ...s } as typeof s & { mood?: string }
+      delete legacy.mood
       return {
-        ...rest,
+        ...legacy,
         pov_character_id: s.pov_character_id ?? null,
         arc_events: s.arc_events ?? [],
       }

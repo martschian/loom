@@ -7,5 +7,7 @@ coverage
 playwright-report
 test-results
 .supabase
+supabase/.branches
+supabase/.temp
 .DS_Store
 *.log
