@@ -4,8 +4,14 @@ import { LocationModal } from '@/components/LocationModal'
 import { Button } from '@/components/ui/Button'
 import { Input, Label, Select, Textarea } from '@/components/ui/FormField'
 import { Modal } from '@/components/ui/Modal'
-import { MOODS } from '@/lib/constants'
-import type { CharacterInput, LocationInput, Mood, ProjectWithRelations, SceneInput } from '@/lib/types'
+import { SceneArcEventsEditor } from '@/components/SceneArcEventsEditor'
+import type {
+  CharacterInput,
+  LocationInput,
+  ProjectWithRelations,
+  SceneArcEventInput,
+  SceneInput,
+} from '@/lib/types'
 
 interface SceneModalProps {
   scene: Partial<SceneInput> & { id?: string }
@@ -32,9 +38,14 @@ export function SceneModal({
     summary: scene.summary || '',
     location_id: scene.location_id ?? null,
     character_ids: scene.character_ids || [],
-    mood: (scene.mood || '') as Mood | '',
     word_count: scene.word_count || 0,
     pov_character_id: scene.pov_character_id ?? null,
+    arc_events: (scene.arc_events ?? []).map((e, i) => ({
+      character_id: e.character_id,
+      beat_id: e.beat_id,
+      note: e.note,
+      sort_order: e.sort_order ?? i,
+    })),
   })
 
   const [showNewCharacter, setShowNewCharacter] = useState(false)
@@ -83,8 +94,14 @@ export function SceneModal({
         ...f,
         character_ids: isOn ? f.character_ids.filter((x) => x !== id) : [...f.character_ids, id],
         pov_character_id: isOn && f.pov_character_id === id ? null : f.pov_character_id,
+        arc_events: isOn
+          ? f.arc_events.filter((e) => e.character_id !== id)
+          : f.arc_events,
       }
     })
+
+  const setArcEvents = (arc_events: SceneArcEventInput[]) =>
+    setForm((f) => ({ ...f, arc_events }))
 
   const togglePov = (id: string) =>
     set('pov_character_id', form.pov_character_id === id ? null : id)
@@ -123,44 +140,28 @@ export function SceneModal({
               placeholder="A short description of what happens in this scene..."
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <div className="mb-1.5 flex items-center justify-between">
-                <span className="text-xs font-medium tracking-wide text-gray-500">LOCATION</span>
-                <button
-                  type="button"
-                  onClick={() => setShowNewLocation(true)}
-                  className="cursor-pointer text-[11px] font-medium text-gray-400 hover:text-ink"
-                >
-                  + New
-                </button>
-              </div>
-              <Select
-                value={form.location_id ?? ''}
-                onChange={(e) => set('location_id', e.target.value || null)}
+          <div>
+            <div className="mb-1.5 flex items-center justify-between">
+              <span className="text-xs font-medium tracking-wide text-gray-500">LOCATION</span>
+              <button
+                type="button"
+                onClick={() => setShowNewLocation(true)}
+                className="cursor-pointer text-[11px] font-medium text-gray-400 hover:text-ink"
               >
-                <option value="">none</option>
-                {project.locations.map((l) => (
-                  <option key={l.id} value={l.id}>
-                    {l.name}
-                  </option>
-                ))}
-              </Select>
+                + New
+              </button>
             </div>
-            <div>
-              <Label>MOOD</Label>
-              <Select
-                value={form.mood}
-                onChange={(e) => set('mood', e.target.value as Mood | '')}
-              >
-                <option value="">none</option>
-                {MOODS.map((m) => (
-                  <option key={m} value={m}>
-                    {m}
-                  </option>
-                ))}
-              </Select>
-            </div>
+            <Select
+              value={form.location_id ?? ''}
+              onChange={(e) => set('location_id', e.target.value || null)}
+            >
+              <option value="">none</option>
+              {project.locations.map((l) => (
+                <option key={l.id} value={l.id}>
+                  {l.name}
+                </option>
+              ))}
+            </Select>
           </div>
           <div>
             <div className="mb-1.5 flex items-center justify-between">
@@ -236,6 +237,18 @@ export function SceneModal({
                 👁 POV character — the scene is written from their perspective
               </p>
             )}
+          </div>
+          <div>
+            <Label>ARC EVENTS</Label>
+            <p className="mb-2 text-[11px] text-gray-400">
+              Tie scene beats to character arc milestones
+            </p>
+            <SceneArcEventsEditor
+              events={form.arc_events}
+              characterIds={form.character_ids}
+              project={project}
+              onChange={setArcEvents}
+            />
           </div>
           <div>
             <Label>WORD COUNT</Label>

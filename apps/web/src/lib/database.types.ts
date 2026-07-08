@@ -154,7 +154,6 @@ export type Database = {
           title: string
           summary: string
           location_id: string | null
-          mood: string
           word_count: number
           sort_order: number
           pov_character_id: string | null
@@ -165,7 +164,6 @@ export type Database = {
           title: string
           summary?: string
           location_id?: string | null
-          mood?: string
           word_count?: number
           sort_order?: number
           pov_character_id?: string | null
@@ -176,7 +174,6 @@ export type Database = {
           title?: string
           summary?: string
           location_id?: string | null
-          mood?: string
           word_count?: number
           sort_order?: number
           pov_character_id?: string | null
@@ -224,6 +221,116 @@ export type Database = {
             columns: ['character_id']
             isOneToOne: false
             referencedRelation: 'characters'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      character_arcs: {
+        Row: {
+          id: string
+          character_id: string
+          title: string
+          summary: string
+          sort_order: number
+        }
+        Insert: {
+          id?: string
+          character_id: string
+          title?: string
+          summary?: string
+          sort_order?: number
+        }
+        Update: {
+          id?: string
+          character_id?: string
+          title?: string
+          summary?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'character_arcs_character_id_fkey'
+            columns: ['character_id']
+            isOneToOne: true
+            referencedRelation: 'characters'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      arc_beats: {
+        Row: {
+          id: string
+          arc_id: string
+          label: string
+          sort_order: number
+        }
+        Insert: {
+          id?: string
+          arc_id: string
+          label: string
+          sort_order?: number
+        }
+        Update: {
+          id?: string
+          arc_id?: string
+          label?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'arc_beats_arc_id_fkey'
+            columns: ['arc_id']
+            isOneToOne: false
+            referencedRelation: 'character_arcs'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      scene_arc_events: {
+        Row: {
+          id: string
+          scene_id: string
+          character_id: string
+          beat_id: string | null
+          note: string
+          sort_order: number
+        }
+        Insert: {
+          id?: string
+          scene_id: string
+          character_id: string
+          beat_id?: string | null
+          note?: string
+          sort_order?: number
+        }
+        Update: {
+          id?: string
+          scene_id?: string
+          character_id?: string
+          beat_id?: string | null
+          note?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'scene_arc_events_scene_id_fkey'
+            columns: ['scene_id']
+            isOneToOne: false
+            referencedRelation: 'scenes'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'scene_arc_events_character_id_fkey'
+            columns: ['character_id']
+            isOneToOne: false
+            referencedRelation: 'characters'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'scene_arc_events_beat_id_fkey'
+            columns: ['beat_id']
+            isOneToOne: false
+            referencedRelation: 'arc_beats'
             referencedColumns: ['id']
           },
         ]

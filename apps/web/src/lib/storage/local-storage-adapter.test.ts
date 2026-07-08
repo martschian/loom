@@ -40,6 +40,7 @@ describe('localStorageAdapter', () => {
     expect(character.age).toBe('')
     expect(character.pronouns).toBe('')
     expect(character.relationships).toBe('')
+    expect(character.arc).toBeNull()
   })
 
   it('backfills missing pov_character_id on legacy scenes', () => {
@@ -64,7 +65,7 @@ describe('localStorageAdapter', () => {
               title: 'Legacy Scene',
               summary: '',
               location_id: null,
-              mood: '',
+              mood: 'Tense',
               word_count: 0,
               sort_order: 0,
               character_ids: [],
@@ -77,6 +78,8 @@ describe('localStorageAdapter', () => {
 
     const scene = localStorageAdapter.fetchProject('p-old')!.scenes[0]
     expect(scene.pov_character_id).toBeNull()
+    expect(scene.arc_events).toEqual([])
+    expect('mood' in scene).toBe(false)
   })
 
   it('falls back to default store when localStorage JSON is corrupt', () => {
@@ -134,7 +137,7 @@ describe('localStorageAdapter', () => {
       title: 'Test Scene',
       summary: 'Summary',
       location_id: null,
-      mood: '',
+      arc_events: [],
       word_count: 100,
       character_ids: [],
       pov_character_id: null,
@@ -148,7 +151,7 @@ describe('localStorageAdapter', () => {
       title: 'Updated Scene',
       summary: 'New summary',
       location_id: null,
-      mood: 'Tense',
+      arc_events: [],
       word_count: 200,
       character_ids: [],
       pov_character_id: null,
@@ -165,7 +168,7 @@ describe('localStorageAdapter', () => {
 
   it('upserts and deletes characters', () => {
     const project = localStorageAdapter.fetchProjects()[0]
-    const baseChar = { role: 'Protagonist', color: '#7c3aed', summary: 'Main character', age: '', pronouns: 'she/her', relationships: '', traits: ['brave'] }
+    const baseChar = { role: 'Protagonist', color: '#7c3aed', summary: 'Main character', age: '', pronouns: 'she/her', relationships: '', traits: ['brave'], arc: null }
     localStorageAdapter.upsertCharacter(project.id, { name: 'Hero', ...baseChar })
     let updated = localStorageAdapter.fetchProject(project.id)!
     const character = updated.characters.find((c) => c.name === 'Hero')!
@@ -181,6 +184,7 @@ describe('localStorageAdapter', () => {
       pronouns: 'she/her',
       relationships: '',
       traits: ['brave', 'cunning'],
+      arc: null,
     })
     updated = localStorageAdapter.fetchProject(project.id)!
     expect(updated.characters.find((c) => c.id === character.id)?.name).toBe(
@@ -202,6 +206,7 @@ describe('localStorageAdapter', () => {
       pronouns: '',
       relationships: '',
       traits: [] as string[],
+      arc: null,
     }
     localStorageAdapter.upsertCharacter(project.id, { name: 'Linked', ...baseChar })
     let updated = localStorageAdapter.fetchProject(project.id)!
@@ -211,7 +216,7 @@ describe('localStorageAdapter', () => {
       title: 'Linked Scene',
       summary: '',
       location_id: null,
-      mood: '',
+      arc_events: [],
       word_count: 0,
       character_ids: [character.id],
       pov_character_id: null,
@@ -268,7 +273,7 @@ describe('localStorageAdapter', () => {
       title: 'Dock Scene',
       summary: '',
       location_id: location.id,
-      mood: '',
+      arc_events: [],
       word_count: 0,
       character_ids: [],
       pov_character_id: null,
@@ -296,7 +301,7 @@ describe('localStorageAdapter', () => {
     const sceneInput = {
       summary: '',
       location_id: null,
-      mood: '',
+      arc_events: [] as { character_id: string; beat_id: string | null; note: string; sort_order: number }[],
       word_count: 0,
       character_ids: [] as string[],
       pov_character_id: null,

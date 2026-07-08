@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import type { Profile } from '@/lib/types'
 import { AuthContext, type AuthContextValue } from '@/hooks/useAuth'
+import { getSiteUrl } from '@/lib/site-url'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase/client'
 import { localStorageAdapter } from '@/lib/storage/local-storage-adapter'
 
@@ -67,12 +68,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setProfile(localStorageAdapter.getProfile())
         return {}
       }
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { display_name: displayName } },
+        options: {
+          data: { display_name: displayName },
+          emailRedirectTo: getSiteUrl(),
+        },
       })
-      return { error: error?.message }
+      if (error) return { error: error.message }
+      const needsEmailConfirmation = data.user != null && data.session == null
+      return { needsEmailConfirmation }
     },
     [],
   )

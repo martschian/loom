@@ -2,6 +2,8 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/lib/database.types'
 import { supabase } from '@/lib/supabase/client'
 import type {
+  Character,
+  CharacterArcInput,
   CharacterInput,
   LocationInput,
   NewProjectInput,
@@ -37,6 +39,102 @@ async function fetchSceneCharacterIds(
   return map
 }
 
+async function fetchCharacterArcs(
+  characterIds: string[],
+): Promise<Map<string, Character['arc']>> {
+  const client = await getClient()
+  const map = new Map<string, Character['arc']>()
+  if (characterIds.length === 0) return map
+
+  const { data: arcs, error: arcsError } = await client
+    .from('character_arcs')
+    .select('id, character_id, title, summary, sort_order')
+    .in('character_id', characterIds)
+
+  if (arcsError) throw arcsError
+  const arcIds = (arcs ?? []).map((a) => a.id)
+  const beatsByArc = new Map<string, NonNullable<Character['arc']>['beats']>()
+
+  if (arcIds.length > 0) {
+    const { data: beats, error: beatsError } = await client
+      .from('arc_beats')
+      .select('id, arc_id, label, sort_order')
+      .in('arc_id', arcIds)
+      .order('sort_order')
+
+    if (beatsError) throw beatsError
+    for (const beat of beats ?? []) {
+      const list = beatsByArc.get(beat.arc_id) ?? []
+      list.push(beat)
+      beatsByArc.set(beat.arc_id, list)
+    }
+  }
+
+  for (const arc of arcs ?? []) {
+    map.set(arc.character_id, {
+      ...arc,
+      beats: beatsByArc.get(arc.id) ?? [],
+    })
+  }
+  return map
+}
+
+async function fetchSceneArcEvents(sceneIds: string[]) {
+  const client = await getClient()
+  const map = new Map<string, ProjectWithRelations['scenes'][0]['arc_events']>()
+  if (sceneIds.length === 0) return map
+
+  const { data, error } = await client
+    .from('scene_arc_events')
+    .select('id, scene_id, character_id, beat_id, note, sort_order')
+    .in('scene_id', sceneIds)
+    .order('sort_order')
+
+  if (error) throw error
+  for (const row of data ?? []) {
+    const existing = map.get(row.scene_id) ?? []
+    existing.push(row)
+    map.set(row.scene_id, existing)
+  }
+  return map
+}
+
+async function syncCharacterArc(
+  characterId: string,
+  arc: CharacterArcInput | null,
+) {
+  const client = await getClient()
+  await client.from('character_arcs').delete().eq('character_id', characterId)
+
+  if (!arc?.title.trim()) return
+
+  const { data: inserted, error: arcError } = await client
+    .from('character_arcs')
+    .insert({
+      character_id: characterId,
+      title: arc.title.trim(),
+      summary: arc.summary,
+      sort_order: 0,
+    })
+    .select('id')
+    .single()
+
+  if (arcError) throw arcError
+
+  const beats = (arc.beats ?? [])
+    .filter((b) => b.label.trim())
+    .map((b, index) => ({
+      arc_id: inserted.id,
+      label: b.label.trim(),
+      sort_order: b.sort_order ?? index,
+    }))
+
+  if (beats.length > 0) {
+    const { error: beatsError } = await client.from('arc_beats').insert(beats)
+    if (beatsError) throw beatsError
+  }
+}
+
 async function assembleProject(
   project: Project,
 ): Promise<ProjectWithRelations> {
@@ -55,17 +153,26 @@ async function assembleProject(
   if (locationsRes.error) throw locationsRes.error
   if (scenesRes.error) throw scenesRes.error
 
+  const characters = charactersRes.data ?? []
+  const characterIds = characters.map((c) => c.id)
   const sceneIds = (scenesRes.data ?? []).map((s) => s.id)
-  const charMap = await fetchSceneCharacterIds(sceneIds)
+  const [charMap, arcMap, eventsMap] = await Promise.all([
+    fetchSceneCharacterIds(sceneIds),
+    fetchCharacterArcs(characterIds),
+    fetchSceneArcEvents(sceneIds),
+  ])
 
   return {
     ...project,
-    characters: charactersRes.data ?? [],
+    characters: characters.map((c) => ({
+      ...c,
+      arc: arcMap.get(c.id) ?? null,
+    })),
     locations: locationsRes.data ?? [],
     scenes: (scenesRes.data ?? []).map((s) => ({
       ...s,
-      mood: s.mood as ProjectWithRelations['scenes'][0]['mood'],
       character_ids: charMap.get(s.id) ?? [],
+      arc_events: eventsMap.get(s.id) ?? [],
     })),
   }
 }
@@ -158,7 +265,6 @@ export async function upsertScene(
     title: input.title,
     summary: input.summary,
     location_id: input.location_id || null,
-    mood: input.mood || '',
     word_count: input.word_count,
     pov_character_id: input.pov_character_id ?? null,
   }
@@ -199,6 +305,22 @@ export async function upsertScene(
     if (error) throw error
   }
 
+  await client.from('scene_arc_events').delete().eq('scene_id', sceneId)
+  const events = (input.arc_events ?? [])
+    .filter((e) => input.character_ids.includes(e.character_id))
+    .filter((e) => e.beat_id || e.note.trim())
+    .map((e, index) => ({
+      scene_id: sceneId,
+      character_id: e.character_id,
+      beat_id: e.beat_id,
+      note: e.note.trim(),
+      sort_order: e.sort_order ?? index,
+    }))
+  if (events.length > 0) {
+    const { error: eventsError } = await client.from('scene_arc_events').insert(events)
+    if (eventsError) throw eventsError
+  }
+
   await touchProject(projectId)
 }
 
@@ -236,13 +358,21 @@ export async function upsertCharacter(
     traits: input.traits,
   }
 
-  if (input.id) {
-    const { error } = await client.from('characters').update(row).eq('id', input.id)
+  let characterId = input.id
+
+  if (characterId) {
+    const { error } = await client.from('characters').update(row).eq('id', characterId)
     if (error) throw error
   } else {
-    const { error } = await client.from('characters').insert(row)
+    const { data, error } = await client.from('characters').insert(row).select('id').single()
     if (error) throw error
+    characterId = data.id
   }
+
+  if (characterId) {
+    await syncCharacterArc(characterId, input.arc)
+  }
+
   await touchProject(projectId)
 }
 
