@@ -144,7 +144,9 @@ Add these **repository secrets** under GitHub → Settings → Secrets and varia
 | Secret | Value |
 |--------|-------|
 | `SUPABASE_URL` | Your project URL (`https://xxxx.supabase.co`) |
-| `SUPABASE_ANON_KEY` | Your project anon/public key |
+| `SUPABASE_ANON_KEY` | Your **publishable** key (`sb_publishable_...`) or legacy **anon** key (`eyJ...`) from Supabase → Settings → API Keys |
+
+Use the low-privilege publishable/anon key only — not the secret/service_role key. The workflow sends it via the `apikey` header (publishable keys must not be sent as `Authorization: Bearer`, or PostgREST returns 401).
 
 After adding secrets, run the workflow manually once (Actions → Supabase keepalive → Run workflow) to confirm it succeeds.
 

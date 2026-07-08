@@ -4,7 +4,7 @@
 #
 # Required repository secrets (same values as Vercel):
 #   SUPABASE_URL        — e.g. https://xxxx.supabase.co
-#   SUPABASE_ANON_KEY   — project anon/public key
+#   SUPABASE_ANON_KEY   — publishable key (sb_publishable_...) or legacy anon key (eyJ...)
 
 name: Supabase keepalive
 
@@ -29,10 +29,31 @@ jobs:
             exit 1
           fi
 
+          # Trim accidental whitespace from copy-paste
+          SUPABASE_URL="${SUPABASE_URL//[[:space:]]/}"
+          SUPABASE_ANON_KEY="${SUPABASE_ANON_KEY//[[:space:]]/}"
+          SUPABASE_URL="${SUPABASE_URL%/}"
+
           echo "Pinging ${SUPABASE_URL}/rest/v1/profiles"
-          curl --fail --silent --show-error \
-            -H "apikey: ${SUPABASE_ANON_KEY}" \
-            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
-            -H "Accept: application/json" \
-            "${SUPABASE_URL}/rest/v1/profiles?select=id&limit=1"
+
+          # New publishable keys (sb_publishable_...) must use apikey only.
+          # Sending them as Authorization: Bearer causes a 401 Invalid JWT.
+          CURL_HEADERS=(
+            -H "apikey: ${SUPABASE_ANON_KEY}"
+            -H "Accept: application/json"
+          )
+          if [[ "${SUPABASE_ANON_KEY}" == eyJ* ]]; then
+            CURL_HEADERS+=(-H "Authorization: Bearer ${SUPABASE_ANON_KEY}")
+          fi
+
+          if ! curl --fail --silent --show-error \
+            "${CURL_HEADERS[@]}" \
+            "${SUPABASE_URL}/rest/v1/profiles?select=id&limit=1"; then
+            echo ""
+            echo "Keepalive ping failed (HTTP 401 usually means the wrong key or"
+            echo "a publishable key sent as Authorization: Bearer — use SUPABASE_ANON_KEY"
+            echo "with your publishable/anon key and apikey header only)."
+            exit 1
+          fi
+
           echo "Keepalive ping succeeded."
