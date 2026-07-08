@@ -34,6 +34,7 @@ jobs:
           SUPABASE_ANON_KEY="${SUPABASE_ANON_KEY//[[:space:]]/}"
           SUPABASE_URL="${SUPABASE_URL%/}"
 
+          echo "URL length: ${#SUPABASE_URL}, key length: ${#SUPABASE_ANON_KEY}, key prefix: ${SUPABASE_ANON_KEY:0:12}..."
           echo "Pinging ${SUPABASE_URL}/rest/v1/profiles"
 
           # New publishable keys (sb_publishable_...) must use apikey only.
@@ -46,13 +47,21 @@ jobs:
             CURL_HEADERS+=(-H "Authorization: Bearer ${SUPABASE_ANON_KEY}")
           fi
 
-          if ! curl --fail --silent --show-error \
+          response=$(curl --silent --show-error -w '\n%{http_code}' \
             "${CURL_HEADERS[@]}" \
-            "${SUPABASE_URL}/rest/v1/profiles?select=id&limit=1"; then
+            "${SUPABASE_URL}/rest/v1/profiles?select=id&limit=1")
+          http_code=$(tail -n1 <<< "$response")
+          body=$(sed '$d' <<< "$response")
+
+          echo "HTTP status: ${http_code}"
+          echo "Response body: ${body}"
+
+          if [[ "$http_code" -lt 200 || "$http_code" -ge 300 ]]; then
             echo ""
-            echo "Keepalive ping failed (HTTP 401 usually means the wrong key or"
-            echo "a publishable key sent as Authorization: Bearer — use SUPABASE_ANON_KEY"
-            echo "with your publishable/anon key and apikey header only)."
+            echo "Keepalive ping failed. Check the response body above for the exact"
+            echo "Supabase/PostgREST error (e.g. Invalid API key, JWT expired,"
+            echo "permission denied) and confirm SUPABASE_URL / SUPABASE_ANON_KEY"
+            echo "are from the SAME project and copied in full with no truncation."
             exit 1
           fi
 
