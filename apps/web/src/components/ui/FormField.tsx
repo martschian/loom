@@ -11,18 +11,38 @@ export function Label({ children }: { children: ReactNode }) {
 const inputClass =
   'w-full rounded-lg border-[1.5px] border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm text-ink outline-none transition-colors focus:border-gray-400 box-border'
 
-export function Input(props: InputHTMLAttributes<HTMLInputElement>) {
-  return <input className={inputClass} {...props} />
-}
-
-export function Textarea(
-  props: TextareaHTMLAttributes<HTMLTextAreaElement>,
-) {
-  return <textarea className={`${inputClass} min-h-20 resize-y`} {...props} />
-}
-
-export function Select(props: InputHTMLAttributes<HTMLSelectElement>) {
+export function Input({
+  className,
+  ...props
+}: InputHTMLAttributes<HTMLInputElement>) {
   return (
-    <select className={`${inputClass} cursor-pointer`} {...props} />
+    <input
+      className={className ? `${inputClass} ${className}` : inputClass}
+      {...props}
+    />
+  )
+}
+
+export function Textarea({
+  className,
+  ...props
+}: TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return (
+    <textarea
+      className={`${inputClass} min-h-20 resize-y${className ? ` ${className}` : ''}`}
+      {...props}
+    />
+  )
+}
+
+export function Select({
+  className,
+  ...props
+}: InputHTMLAttributes<HTMLSelectElement>) {
+  return (
+    <select
+      className={`${inputClass} cursor-pointer${className ? ` ${className}` : ''}`}
+      {...props}
+    />
   )
 }

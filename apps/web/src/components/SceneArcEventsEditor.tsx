@@ -59,48 +59,52 @@ export function SceneArcEventsEditor({
             className="flex flex-col gap-2 rounded-lg border border-gray-200 bg-gray-50 p-2"
           >
             <div className="flex items-start gap-2">
-              <Select
-                value={event.character_id}
-                onChange={(e) => {
-                  const nextChar = project.characters.find((c) => c.id === e.target.value)
-                  const firstBeat = nextChar?.arc?.beats[0]
-                  const nextBeatId = firstBeat?.id ?? null
-                  update(index, {
-                    character_id: e.target.value,
-                    beat_id: nextBeatId,
-                    note: nextBeatId === null ? event.note : '',
-                  })
-                }}
-                className="w-[130px] shrink-0 text-xs"
-              >
-                {cast.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </Select>
-              <Select
-                value={selectValue}
-                onChange={(e) => {
-                  const v = e.target.value
-                  update(index, {
-                    beat_id: v === CUSTOM_BEAT ? null : v,
-                    note: v === CUSTOM_BEAT ? event.note : '',
-                  })
-                }}
-                className="flex-1 text-xs"
-              >
-                {beats.map((b) => (
-                  <option key={b.id} value={b.id}>
-                    {b.label}
-                  </option>
-                ))}
-                <option value={CUSTOM_BEAT}>Custom note</option>
-              </Select>
+              <div className="w-[130px] shrink-0">
+                <Select
+                  value={event.character_id}
+                  onChange={(e) => {
+                    const nextChar = project.characters.find((c) => c.id === e.target.value)
+                    const firstBeat = nextChar?.arc?.beats[0]
+                    const nextBeatId = firstBeat?.id ?? null
+                    update(index, {
+                      character_id: e.target.value,
+                      beat_id: nextBeatId,
+                      note: nextBeatId === null ? event.note : '',
+                    })
+                  }}
+                  className="text-xs"
+                >
+                  {cast.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+              <div className="min-w-0 flex-1">
+                <Select
+                  value={selectValue}
+                  onChange={(e) => {
+                    const v = e.target.value
+                    update(index, {
+                      beat_id: v === CUSTOM_BEAT ? null : v,
+                      note: v === CUSTOM_BEAT ? event.note : '',
+                    })
+                  }}
+                  className="text-xs"
+                >
+                  {beats.map((b) => (
+                    <option key={b.id} value={b.id}>
+                      {b.label}
+                    </option>
+                  ))}
+                  <option value={CUSTOM_BEAT}>Custom note</option>
+                </Select>
+              </div>
               <button
                 type="button"
                 onClick={() => remove(index)}
-                className="cursor-pointer px-1 text-lg leading-none text-gray-400 hover:text-red-500"
+                className="shrink-0 cursor-pointer px-1 text-lg leading-none text-gray-400 hover:text-red-500"
                 aria-label="Remove arc event"
               >
                 ×
