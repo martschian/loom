@@ -1,16 +1,15 @@
 import { useState } from 'react'
-import { Link, Navigate, useNavigate } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
 import { Input, Label } from '@/components/ui/FormField'
 import { useAuth } from '@/hooks/useAuth'
 
-export function LoginPage() {
-  const { signIn, session, loading } = useAuth()
-  const navigate = useNavigate()
+export function ForgotPasswordPage() {
+  const { sendPasswordReset, session, loading } = useAuth()
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [sent, setSent] = useState(false)
 
   if (loading) return null
   if (session) return <Navigate to="/" replace />
@@ -19,20 +18,41 @@ export function LoginPage() {
     e.preventDefault()
     setError('')
     setSubmitting(true)
-    const { error: err } = await signIn(email, password)
+    const { error: err } = await sendPasswordReset(email)
     setSubmitting(false)
+    // Always show the confirmation state on success, even if no account
+    // exists for this email — avoids leaking which emails are registered.
     if (err) {
       setError(err)
     } else {
-      navigate('/')
+      setSent(true)
     }
+  }
+
+  if (sent) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-6">
+        <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-8 shadow-sm text-center">
+          <h1 className="mb-2 font-serif text-2xl font-bold text-ink">Check your email</h1>
+          <p className="mb-6 text-sm text-gray-500">
+            If an account exists for <span className="font-medium text-ink">{email}</span>,
+            we sent a link to reset your password.
+          </p>
+          <Link to="/login" className="text-sm text-ink underline">
+            Back to sign in
+          </Link>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-6">
       <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
         <h1 className="mb-1 font-serif text-2xl font-bold text-ink">Loom</h1>
-        <p className="mb-6 text-sm text-gray-500">Sign in to your account</p>
+        <p className="mb-6 text-sm text-gray-500">
+          Enter your email and we&apos;ll send you a link to reset your password.
+        </p>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
             <Label>EMAIL</Label>
@@ -42,32 +62,17 @@ export function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               required
               autoComplete="email"
-            />
-          </div>
-          <div>
-            <div className="flex items-center justify-between">
-              <Label>PASSWORD</Label>
-              <Link to="/forgot-password" className="mb-1.5 text-xs text-gray-400 underline hover:text-ink">
-                Forgot password?
-              </Link>
-            </div>
-            <Input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              autoComplete="current-password"
+              autoFocus
             />
           </div>
           {error && <p className="text-sm text-red-500">{error}</p>}
           <Button type="submit" disabled={submitting} className="w-full">
-            {submitting ? 'Signing in...' : 'Sign in'}
+            {submitting ? 'Sending...' : 'Send reset link'}
           </Button>
         </form>
         <p className="mt-4 text-center text-sm text-gray-500">
-          No account?{' '}
-          <Link to="/signup" className="text-ink underline">
-            Sign up
+          <Link to="/login" className="text-ink underline">
+            Back to sign in
           </Link>
         </p>
       </div>

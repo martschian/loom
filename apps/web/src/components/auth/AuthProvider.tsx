@@ -89,6 +89,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setProfile(null)
   }, [])
 
+  const sendPasswordReset = useCallback(async (email: string) => {
+    if (!supabase) {
+      return { error: 'Password reset is not available in local demo mode.' }
+    }
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${getSiteUrl()}/reset-password`,
+    })
+    return { error: error?.message }
+  }, [])
+
+  const updatePassword = useCallback(async (password: string) => {
+    if (!supabase) {
+      return { error: 'Password reset is not available in local demo mode.' }
+    }
+    const { error } = await supabase.auth.updateUser({ password })
+    return { error: error?.message }
+  }, [])
+
   const value = useMemo(
     () => ({
       session,
@@ -97,9 +115,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signIn,
       signUp,
       signOut,
+      sendPasswordReset,
+      updatePassword,
       userId: session?.user?.id ?? null,
     }),
-    [session, profile, loading, signIn, signUp, signOut],
+    [session, profile, loading, signIn, signUp, signOut, sendPasswordReset, updatePassword],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
