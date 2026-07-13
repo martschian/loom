@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
+import { Drawer } from '@/components/ui/Drawer'
 import { Input, Label, Textarea } from '@/components/ui/FormField'
-import { Modal } from '@/components/ui/Modal'
 import { LOC_COLORS } from '@/lib/constants'
 import type { LocationInput } from '@/lib/types'
 
-interface LocationModalProps {
+interface LocationEditorProps {
   location: Partial<LocationInput> & { id?: string }
   colorIndex: number
   onSave: (location: LocationInput & { id?: string }) => void
@@ -13,13 +13,13 @@ interface LocationModalProps {
   onClose: () => void
 }
 
-export function LocationModal({
+export function LocationEditor({
   location,
   colorIndex,
   onSave,
   onDelete,
   onClose,
-}: LocationModalProps) {
+}: LocationEditorProps) {
   const isNew = !location.id
   const [form, setForm] = useState({
     name: location.name || '',
@@ -31,7 +31,7 @@ export function LocationModal({
     setForm((f) => ({ ...f, [k]: v }))
 
   return (
-    <Modal title={isNew ? 'New location' : 'Edit location'} onClose={onClose}>
+    <Drawer title={isNew ? 'New location' : 'Edit location'} onClose={onClose}>
       <div className="flex flex-col gap-3.5">
         <div className="mb-1 flex flex-wrap gap-1.5">
           {LOC_COLORS.map((c) => (
@@ -87,6 +87,6 @@ export function LocationModal({
           </div>
         </div>
       </div>
-    </Modal>
+    </Drawer>
   )
 }

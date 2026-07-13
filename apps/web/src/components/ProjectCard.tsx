@@ -28,22 +28,22 @@ export function ProjectCard({ project, onClick }: ProjectCardProps) {
       onKeyDown={(e) => e.key === 'Enter' && onClick(project)}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="cursor-pointer rounded-[14px] border-[1.5px] bg-white p-5 transition-all"
+      className="cursor-pointer rounded-2xl border-[1.5px] bg-white p-5 transition-all"
       style={{
-        borderColor: hovered ? '#1a1a2e' : '#e5e7eb',
+        borderColor: hovered ? 'var(--color-ink)' : '#e5e7eb',
         boxShadow: hovered ? '0 4px 20px rgba(26,26,46,0.1)' : 'none',
       }}
     >
       {project.genre && (
-        <div className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">
+        <div className="mb-2 text-2xs font-semibold uppercase tracking-widest text-gray-400">
           {project.genre}
         </div>
       )}
-      <h3 className="mb-2 font-serif text-[17px] font-bold leading-snug text-ink">
+      <h3 className="mb-2 font-serif text-lg font-bold leading-snug text-ink">
         {project.title}
       </h3>
       {project.synopsis && (
-        <p className="mb-3.5 line-clamp-2 text-[12.5px] leading-relaxed text-gray-500">
+        <p className="mb-3.5 line-clamp-2 text-xs leading-relaxed text-gray-500">
           {project.synopsis}
         </p>
       )}
@@ -54,11 +54,11 @@ export function ProjectCard({ project, onClick }: ProjectCardProps) {
               className="h-full rounded-sm"
               style={{
                 width: `${pct}%`,
-                background: pct >= 100 ? '#10b981' : '#6366f1',
+                background: pct >= 100 ? 'var(--color-success)' : 'var(--color-accent)',
               }}
             />
           </div>
-          <span className="mt-0.5 block text-[11px] text-gray-400">
+          <span className="mt-0.5 block text-2xs text-gray-400">
             {wordCount.toLocaleString()} / {Number(target).toLocaleString()}{' '}
             words ({pct}%)
           </span>

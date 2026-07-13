@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { LocationModal } from '@/components/LocationModal'
+import { LocationEditor } from '@/components/LocationEditor'
 import { Button } from '@/components/ui/Button'
 import { getSceneAccentColor } from '@/lib/scene-utils'
 import { sortScenes } from '@/lib/utils'
@@ -32,7 +32,7 @@ export function LocationsTab({
       {project.locations.length === 0 && (
         <div className="px-6 py-16 text-center text-gray-400">
           <div className="mb-3 text-[32px]">🗺️</div>
-          <p className="mb-5 text-[15px]">No locations yet. Add your first one.</p>
+          <p className="mb-5 text-base">No locations yet. Add your first one.</p>
           <Button onClick={() => setShowNew(true)}>Add location</Button>
         </div>
       )}
@@ -53,7 +53,7 @@ export function LocationsTab({
         })}
       </div>
       {editing && (
-        <LocationModal
+        <LocationEditor
           location={editing}
           colorIndex={project.locations.length}
           onSave={async (loc) => {
@@ -68,7 +68,7 @@ export function LocationsTab({
         />
       )}
       {showNew && (
-        <LocationModal
+        <LocationEditor
           location={{}}
           colorIndex={project.locations.length}
           onSave={async (loc) => {
@@ -99,7 +99,7 @@ function LocationRow({
 
   return (
     <div
-      className="rounded-xl border-[1.5px] bg-white transition-all"
+      className="rounded-2xl border-[1.5px] bg-white transition-all"
       style={{
         borderColor: hovered ? l.color : '#e5e7eb',
         boxShadow: hovered ? `0 4px 16px ${l.color}22` : 'none',
@@ -135,15 +135,15 @@ function LocationRow({
           onKeyDown={(e) => e.key === 'Enter' && onClick()}
           className="min-w-0 flex-1 cursor-pointer text-left"
         >
-          <h3 className="mb-1 font-serif text-[15px] font-semibold text-ink">
+          <h3 className="mb-1 font-serif text-base font-semibold text-ink">
             {l.name}
           </h3>
           {l.summary ? (
-            <p className="mb-1.5 text-[13px] leading-relaxed text-gray-600">
+            <p className="mb-1.5 text-sm leading-relaxed text-gray-600">
               {l.summary}
             </p>
           ) : (
-            <p className="mb-1.5 text-[13px] italic text-gray-400">
+            <p className="mb-1.5 text-sm italic text-gray-400">
               No summary yet — click to add one.
             </p>
           )}
@@ -161,7 +161,7 @@ function LocationRow({
             aria-label={expanded ? 'Collapse scenes' : 'Expand scenes'}
             title={`${scenes.length} ${scenes.length === 1 ? 'scene' : 'scenes'}`}
           >
-            <span className="text-[11px]">
+            <span className="text-2xs">
               {scenes.length} {scenes.length === 1 ? 'scene' : 'scenes'}
             </span>
             <span
@@ -172,7 +172,7 @@ function LocationRow({
             </span>
           </button>
         ) : (
-          <span className="shrink-0 pt-1 text-[11px] text-gray-400">
+          <span className="shrink-0 pt-1 text-2xs text-gray-400">
             0 scenes
           </span>
         )}
@@ -196,7 +196,7 @@ function LocationRow({
               return (
                 <li
                   key={scene.id}
-                  className="flex items-baseline gap-2.5 rounded-lg px-2 py-1.5 text-[13px]"
+                  className="flex items-baseline gap-2.5 rounded-lg px-2 py-1.5 text-sm"
                 >
                   <span
                     className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white"
@@ -206,12 +206,12 @@ function LocationRow({
                   </span>
                   <span className="font-medium text-ink">{scene.title}</span>
                   {chars.length > 0 && (
-                    <span className="text-[11px] text-gray-400">
+                    <span className="text-2xs text-gray-400">
                       · {chars.map((c) => c.name).join(', ')}
                     </span>
                   )}
                   {scene.arc_events.length > 0 && (
-                    <span className="ml-auto shrink-0 text-[11px] text-gray-400">
+                    <span className="ml-auto shrink-0 text-2xs text-gray-400">
                       {scene.arc_events.length}{' '}
                       {scene.arc_events.length === 1 ? 'event' : 'events'}
                     </span>

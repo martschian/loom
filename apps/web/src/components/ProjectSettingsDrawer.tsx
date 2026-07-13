@@ -1,20 +1,20 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
+import { Drawer } from '@/components/ui/Drawer'
 import { Input, Label, Textarea } from '@/components/ui/FormField'
-import { Modal } from '@/components/ui/Modal'
 import type { ProjectSettingsInput, ProjectWithRelations } from '@/lib/types'
 
-interface ProjectSettingsModalProps {
+interface ProjectSettingsDrawerProps {
   project: ProjectWithRelations
   onSave: (settings: ProjectSettingsInput) => void
   onClose: () => void
 }
 
-export function ProjectSettingsModal({
+export function ProjectSettingsDrawer({
   project,
   onSave,
   onClose,
-}: ProjectSettingsModalProps) {
+}: ProjectSettingsDrawerProps) {
   const [title, setTitle] = useState(project.title)
   const [genre, setGenre] = useState(project.genre || '')
   const [synopsis, setSynopsis] = useState(project.synopsis || '')
@@ -23,7 +23,7 @@ export function ProjectSettingsModal({
   )
 
   return (
-    <Modal title="Project settings" onClose={onClose}>
+    <Drawer title="Project settings" onClose={onClose}>
       <div className="flex flex-col gap-4">
         <div>
           <Label>PROJECT TITLE</Label>
@@ -74,6 +74,6 @@ export function ProjectSettingsModal({
           </Button>
         </div>
       </div>
-    </Modal>
+    </Drawer>
   )
 }

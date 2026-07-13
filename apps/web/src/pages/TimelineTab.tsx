@@ -15,7 +15,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { SceneCard } from '@/components/SceneCard'
-import { SceneModal } from '@/components/SceneModal'
+import { SceneEditor } from '@/components/SceneEditor'
 import { Button } from '@/components/ui/Button'
 import { sortScenes } from '@/lib/utils'
 import type { CharacterInput, LocationInput, ProjectWithRelations, Scene, SceneInput } from '@/lib/types'
@@ -124,7 +124,7 @@ export function TimelineTab({
       {scenes.length === 0 && (
         <div className="px-6 py-16 text-center text-gray-400">
           <div className="mb-3 text-[32px]">📝</div>
-          <p className="text-[15px]">No scenes yet. Click &quot;Add scene&quot; to begin.</p>
+          <p className="text-base">No scenes yet. Click &quot;Add scene&quot; to begin.</p>
         </div>
       )}
       <DndContext
@@ -148,7 +148,7 @@ export function TimelineTab({
         <div className="pl-12">
           <Button
             variant="secondary"
-            className="text-[13px] text-gray-400"
+            className="text-sm text-gray-400"
             onClick={() => setShowNewScene(true)}
           >
             + Add another scene
@@ -156,7 +156,7 @@ export function TimelineTab({
         </div>
       )}
       {(editingScene || showNewScene) && (
-        <SceneModal
+        <SceneEditor
           scene={
             editingScene
               ? {

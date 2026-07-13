@@ -36,7 +36,7 @@ export function SceneCard({
       <div className="flex w-10 shrink-0 flex-col items-center">
         <div
           ref={dragHandleRef}
-          className={`z-[1] flex h-7 w-7 shrink-0 select-none items-center justify-center rounded-full text-[11px] font-bold text-white ${dragHandleRef ? 'cursor-grab active:cursor-grabbing' : ''}`}
+          className={`z-[1] flex h-7 w-7 shrink-0 select-none items-center justify-center rounded-full text-2xs font-bold text-white ${dragHandleRef ? 'cursor-grab active:cursor-grabbing' : ''}`}
           style={{ background: accentColor }}
           title={dragHandleRef ? 'Drag to reorder' : undefined}
           {...dragHandleProps}
@@ -52,19 +52,19 @@ export function SceneCard({
         onKeyDown={(e) => e.key === 'Enter' && onClick(scene)}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
-        className="mb-4 ml-2 flex-1 cursor-pointer rounded-xl border-[1.5px] bg-white p-3.5 transition-all"
+        className="mb-4 ml-2 flex-1 cursor-pointer rounded-2xl border-[1.5px] bg-white p-3.5 transition-all"
         style={{
           borderColor: hovered ? accentColor : '#e5e7eb',
           boxShadow: hovered ? `0 4px 16px ${accentColor}22` : 'none',
         }}
       >
         <div className="mb-2 flex items-start justify-between gap-2">
-          <h3 className="font-serif text-[15px] font-semibold leading-snug text-ink">
+          <h3 className="font-serif text-base font-semibold leading-snug text-ink">
             {scene.title}
           </h3>
         </div>
         {scene.summary && (
-          <p className="mb-2.5 text-[13px] leading-relaxed text-gray-600">
+          <p className="mb-2.5 text-sm leading-relaxed text-gray-600">
             {scene.summary}
           </p>
         )}
@@ -87,7 +87,7 @@ export function SceneCard({
             )
           })}
           {extraEvents > 0 && (
-            <span className="text-[11px] text-gray-400">+{extraEvents} more</span>
+            <span className="text-2xs text-gray-400">+{extraEvents} more</span>
           )}
           {chars.map((c) => {
             const isPov = c.id === scene.pov_character_id
@@ -109,7 +109,7 @@ export function SceneCard({
                   {c.name[0]}
                 </div>
                 <span
-                  className="text-[11px] font-medium"
+                  className="text-2xs font-medium"
                   style={{ color: c.color }}
                 >
                   {c.name}
@@ -127,7 +127,7 @@ export function SceneCard({
             )
           })}
           {scene.word_count > 0 && (
-            <span className="ml-auto text-[11px] text-gray-400">
+            <span className="ml-auto text-2xs text-gray-400">
               {scene.word_count.toLocaleString()} words
             </span>
           )}

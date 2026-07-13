@@ -15,7 +15,7 @@ export function AppHeader() {
           <Link to="/" className="font-serif text-2xl font-bold tracking-tight text-white no-underline">
             Loom
           </Link>
-          <span className="text-xs text-gray-500">creative writing</span>
+          <span className="text-xs text-gray-400">creative writing</span>
         </div>
         <div className="relative">
           <button
@@ -24,7 +24,7 @@ export function AppHeader() {
             className="flex cursor-pointer items-center gap-2 rounded-lg border border-white/20 bg-white/10 py-1.5 pl-1.5 pr-3 text-white"
           >
             <Avatar name={displayName} size={28} />
-            <span className="text-[13px] font-medium">{displayName}</span>
+            <span className="text-sm font-medium">{displayName}</span>
             <span className="text-[10px] opacity-60">▾</span>
           </button>
           {open && (
@@ -35,7 +35,7 @@ export function AppHeader() {
                   signOut()
                   setOpen(false)
                 }}
-                className="w-full cursor-pointer rounded-md border-none bg-transparent px-2.5 py-2 text-left text-[13px] text-gray-600 hover:bg-gray-50"
+                className="w-full cursor-pointer rounded-md border-none bg-transparent px-2.5 py-2 text-left text-sm text-gray-600 hover:bg-gray-50"
               >
                 Sign out
               </button>

@@ -24,7 +24,7 @@ export function Button({
   return (
     <button
       type="button"
-      className={`cursor-pointer rounded-lg px-5 py-2.5 text-sm font-medium transition-colors ${variants[variant]} ${className}`}
+      className={`cursor-pointer rounded-lg px-5 py-2.5 text-sm font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ink/30 focus-visible:ring-offset-1 ${variants[variant]} ${className}`}
       {...props}
     >
       {children}

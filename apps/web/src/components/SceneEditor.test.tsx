@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import { SceneModal } from '@/components/SceneModal'
+import { SceneEditor } from '@/components/SceneEditor'
 import type { ProjectWithRelations } from '@/lib/types'
 
 const project: ProjectWithRelations = {
@@ -20,10 +20,10 @@ const project: ProjectWithRelations = {
 
 const noop = vi.fn().mockResolvedValue(undefined)
 
-describe('SceneModal', () => {
+describe('SceneEditor', () => {
   it('disables save when title is empty', () => {
     render(
-      <SceneModal
+      <SceneEditor
         scene={{}}
         project={project}
         onSave={vi.fn()}
@@ -39,7 +39,7 @@ describe('SceneModal', () => {
   it('enables save when title is provided', async () => {
     const user = userEvent.setup()
     render(
-      <SceneModal
+      <SceneEditor
         scene={{}}
         project={project}
         onSave={vi.fn()}

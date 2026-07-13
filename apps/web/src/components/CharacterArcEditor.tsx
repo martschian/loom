@@ -61,17 +61,17 @@ export function CharacterArcEditor({ arc, onChange }: CharacterArcEditorProps) {
       </div>
       <div>
         <Label>ARC BEATS</Label>
-        <p className="mb-1.5 text-[11px] text-gray-400">
+        <p className="mb-1.5 text-2xs text-gray-400">
           Ordered milestones along this arc (used when logging scene events)
         </p>
         <div className="mb-2 flex flex-col gap-1">
           {value.beats.map((beat, index) => (
             <div
               key={index}
-              className="flex items-center justify-between rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-[13px]"
+              className="flex items-center justify-between rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-sm"
             >
               <span>
-                <span className="mr-2 text-[11px] text-gray-400">{index + 1}.</span>
+                <span className="mr-2 text-2xs text-gray-400">{index + 1}.</span>
                 {beat.label}
               </span>
               <button
@@ -91,7 +91,7 @@ export function CharacterArcEditor({ arc, onChange }: CharacterArcEditorProps) {
             onChange={(e) => setBeatInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addBeat())}
             placeholder="Add a milestone…"
-            className="flex-1 text-[13px]"
+            className="flex-1 text-sm"
           />
           <Button type="button" variant="secondary" onClick={addBeat} className="text-xs">
             Add
@@ -102,7 +102,7 @@ export function CharacterArcEditor({ arc, onChange }: CharacterArcEditorProps) {
         <button
           type="button"
           onClick={() => onChange(null)}
-          className="cursor-pointer self-start text-[11px] text-gray-400 hover:text-red-500"
+          className="cursor-pointer self-start text-2xs text-gray-400 hover:text-red-500"
         >
           Remove arc
         </button>

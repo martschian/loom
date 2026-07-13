@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
+import { Drawer } from '@/components/ui/Drawer'
 import { Input, Label, Textarea } from '@/components/ui/FormField'
-import { Modal } from '@/components/ui/Modal'
 import { CharacterArcEditor } from '@/components/CharacterArcEditor'
 import { CHAR_COLORS } from '@/lib/constants'
 import type { CharacterInput } from '@/lib/types'
 
-interface CharacterModalProps {
+interface CharacterEditorProps {
   character: Partial<CharacterInput> & { id?: string }
   colorIndex: number
   onSave: (character: CharacterInput & { id?: string }) => void
@@ -14,13 +14,13 @@ interface CharacterModalProps {
   onClose: () => void
 }
 
-export function CharacterModal({
+export function CharacterEditor({
   character,
   colorIndex,
   onSave,
   onDelete,
   onClose,
-}: CharacterModalProps) {
+}: CharacterEditorProps) {
   const isNew = !character.id
   const [form, setForm] = useState<CharacterInput>({
     name: character.name || '',
@@ -69,7 +69,7 @@ export function CharacterModal({
   }
 
   return (
-    <Modal
+    <Drawer
       title={isNew ? 'New character' : 'Edit character'}
       onClose={onClose}
       width={560}
@@ -152,7 +152,7 @@ export function CharacterModal({
             {form.traits.map((trait) => (
               <span
                 key={trait}
-                className="flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-medium"
+                className="flex items-center gap-1 rounded-full px-2.5 py-0.5 text-2xs font-medium"
                 style={{
                   background: `${form.color}22`,
                   color: form.color,
@@ -176,10 +176,10 @@ export function CharacterModal({
               onKeyDown={handleTraitKeyDown}
               onBlur={addTrait}
               placeholder={form.traits.length === 0 ? 'Type a trait and press Enter…' : ''}
-              className="min-w-[120px] flex-1 bg-transparent text-[13px] text-ink outline-none placeholder:text-gray-400"
+              className="min-w-[120px] flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-gray-400"
             />
           </div>
-          <p className="mt-1 text-[11px] text-gray-400">
+          <p className="mt-1 text-2xs text-gray-400">
             Press Enter or comma to add · Backspace to remove last
           </p>
         </div>
@@ -235,6 +235,6 @@ export function CharacterModal({
           </div>
         </div>
       </div>
-    </Modal>
+    </Drawer>
   )
 }

@@ -3,10 +3,10 @@ interface TagProps {
   color?: string
 }
 
-export function Tag({ label, color = '#6366f1' }: TagProps) {
+export function Tag({ label, color = 'var(--color-accent)' }: TagProps) {
   return (
     <span
-      className="whitespace-nowrap rounded px-2 py-0.5 text-[11px] font-medium tracking-wide"
+      className="whitespace-nowrap rounded px-2 py-0.5 text-2xs font-medium tracking-wide"
       style={{
         background: `${color}22`,
         color,

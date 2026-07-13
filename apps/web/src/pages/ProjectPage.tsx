@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { ProjectSettingsModal } from '@/components/ProjectSettingsModal'
-import { Button } from '@/components/ui/Button'
+import { ProjectSettingsDrawer } from '@/components/ProjectSettingsDrawer'
+import { IconButton } from '@/components/ui/IconButton'
+import { GearIcon } from '@/components/ui/icons'
 import { LoadingScreen } from '@/components/ui/LoadingScreen'
 import { CharactersTab } from '@/pages/CharactersTab'
 import { LocationsTab } from '@/pages/LocationsTab'
@@ -61,13 +62,13 @@ export function ProjectPage() {
           <button
             type="button"
             onClick={() => navigate('/')}
-            className="mb-4 flex cursor-pointer items-center gap-1.5 border-none bg-transparent p-0 text-[13px] text-gray-400"
+            className="mb-4 flex cursor-pointer items-center gap-1.5 border-none bg-transparent p-0 text-sm text-gray-400"
           >
             ← Back to projects
           </button>
           <div className="flex items-start justify-between gap-3">
             <div>
-              <h1 className="mb-1 font-serif text-[26px] font-bold text-white">
+              <h1 className="mb-1 font-serif text-2xl font-bold text-white">
                 {project.title}
               </h1>
               {project.genre && (
@@ -81,13 +82,13 @@ export function ProjectPage() {
                 </p>
               )}
             </div>
-            <Button
-              variant="secondary"
-              className="shrink-0 border-gray-700 text-gray-400"
+            <IconButton
+              aria-label="Project settings"
+              title="Project settings"
               onClick={() => setShowSettings(true)}
             >
-              Settings
-            </Button>
+              <GearIcon />
+            </IconButton>
           </div>
 
           <div className="mt-5 flex gap-7 border-t border-gray-700 pt-4">
@@ -104,7 +105,7 @@ export function ProjectPage() {
                 <div className="font-serif text-lg font-bold text-white">
                   {s.value}
                 </div>
-                <div className="text-[11px] uppercase tracking-wider text-gray-500">
+                <div className="text-2xs uppercase tracking-wider text-gray-400">
                   {s.label}
                 </div>
               </div>
@@ -118,11 +119,11 @@ export function ProjectPage() {
                   className="h-full rounded-sm transition-all duration-400"
                   style={{
                     width: `${pct}%`,
-                    background: pct >= 100 ? '#10b981' : '#6366f1',
+                    background: pct >= 100 ? 'var(--color-success)' : 'var(--color-accent)',
                   }}
                 />
               </div>
-              <span className="mt-1 block text-[11px] text-gray-500">
+              <span className="mt-1 block text-2xs text-gray-400">
                 {pct}% of target
               </span>
             </div>
@@ -140,7 +141,7 @@ export function ProjectPage() {
                     activeTab === tab.id
                       ? '2px solid #fff'
                       : '2px solid transparent',
-                  color: activeTab === tab.id ? '#fff' : '#6b7280',
+                  color: activeTab === tab.id ? '#fff' : '#9ca3af',
                   fontWeight: activeTab === tab.id ? 600 : 400,
                 }}
               >
@@ -177,7 +178,7 @@ export function ProjectPage() {
       )}
 
       {showSettings && (
-        <ProjectSettingsModal
+        <ProjectSettingsDrawer
           project={project}
           onSave={handleSaveSettings}
           onClose={() => setShowSettings(false)}

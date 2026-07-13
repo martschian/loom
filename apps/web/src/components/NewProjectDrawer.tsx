@@ -1,21 +1,21 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
+import { Drawer } from '@/components/ui/Drawer'
 import { Input, Label, Textarea } from '@/components/ui/FormField'
-import { Modal } from '@/components/ui/Modal'
 import type { NewProjectInput } from '@/lib/types'
 
-interface NewProjectModalProps {
+interface NewProjectDrawerProps {
   onSave: (input: NewProjectInput) => void
   onClose: () => void
 }
 
-export function NewProjectModal({ onSave, onClose }: NewProjectModalProps) {
+export function NewProjectDrawer({ onSave, onClose }: NewProjectDrawerProps) {
   const [form, setForm] = useState({ title: '', genre: '', synopsis: '' })
   const set = (k: keyof typeof form, v: string) =>
     setForm((f) => ({ ...f, [k]: v }))
 
   return (
-    <Modal title="New project" onClose={onClose}>
+    <Drawer title="New project" onClose={onClose}>
       <div className="flex flex-col gap-3.5">
         <div>
           <Label>TITLE</Label>
@@ -54,6 +54,6 @@ export function NewProjectModal({ onSave, onClose }: NewProjectModalProps) {
           </Button>
         </div>
       </div>
-    </Modal>
+    </Drawer>
   )
 }

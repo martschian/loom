@@ -4,8 +4,19 @@
 @theme {
   --font-serif: "Lora", serif;
   --font-sans: "DM Sans", sans-serif;
+
   --color-ink: #1a1a2e;
   --color-ink-muted: #6b7280;
+  --color-accent: #6366f1;
+  --color-success: #10b981;
+
+  /* Extend the default type scale with a "meta" size for labels/eyebrows,
+     and re-tune 2xl so large serif headings share one consistent size. */
+  --text-2xs: 0.6875rem;
+  --text-2xs--line-height: 1rem;
+  --text-2xl: 1.625rem;
+  --text-2xl--line-height: 1.25;
+  --text-2xl--letter-spacing: -0.01em;
 }
 
 body {

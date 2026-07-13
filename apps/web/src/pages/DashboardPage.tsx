@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AppHeader } from '@/components/layout/AppHeader'
-import { NewProjectModal } from '@/components/NewProjectModal'
+import { NewProjectDrawer } from '@/components/NewProjectDrawer'
 import { ProjectCard } from '@/components/ProjectCard'
 import { Button } from '@/components/ui/Button'
 import { LoadingScreen } from '@/components/ui/LoadingScreen'
@@ -26,7 +26,7 @@ export function DashboardPage() {
             <h2 className="font-serif text-xl font-bold text-ink">
               {displayName}&apos;s projects
             </h2>
-            <p className="mt-1 text-[13px] text-gray-400">
+            <p className="mt-1 text-sm text-gray-400">
               {projects.length}{' '}
               {projects.length === 1 ? 'project' : 'projects'}
             </p>
@@ -36,7 +36,7 @@ export function DashboardPage() {
         {projects.length === 0 && (
           <div className="px-6 py-20 text-center text-gray-400">
             <div className="mb-4 text-[40px]">✍️</div>
-            <p className="mb-5 text-[15px]">
+            <p className="mb-5 text-base">
               No projects yet. Start your first story.
             </p>
             <Button onClick={() => setShowNewProject(true)}>
@@ -55,7 +55,7 @@ export function DashboardPage() {
         </div>
       </div>
       {showNewProject && (
-        <NewProjectModal
+        <NewProjectDrawer
           onSave={async (input) => {
             const project = await createProject(input)
             setShowNewProject(false)

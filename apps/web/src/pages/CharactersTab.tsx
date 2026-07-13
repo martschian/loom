@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CharacterModal } from '@/components/CharacterModal'
+import { CharacterEditor } from '@/components/CharacterEditor'
 import { Button } from '@/components/ui/Button'
 import { Tag } from '@/components/ui/Tag'
 import { formatArcEventLabel, getSceneAccentColor } from '@/lib/scene-utils'
@@ -33,7 +33,7 @@ export function CharactersTab({
       {project.characters.length === 0 && (
         <div className="px-6 py-16 text-center text-gray-400">
           <div className="mb-3 text-[32px]">👤</div>
-          <p className="mb-5 text-[15px]">No characters yet. Add your first one.</p>
+          <p className="mb-5 text-base">No characters yet. Add your first one.</p>
           <Button onClick={() => setShowNew(true)}>Add character</Button>
         </div>
       )}
@@ -55,7 +55,7 @@ export function CharactersTab({
         })}
       </div>
       {editing && (
-        <CharacterModal
+        <CharacterEditor
           character={editing}
           colorIndex={project.characters.length}
           onSave={async (char) => {
@@ -70,7 +70,7 @@ export function CharactersTab({
         />
       )}
       {showNew && (
-        <CharacterModal
+        <CharacterEditor
           character={{}}
           colorIndex={project.characters.length}
           onSave={async (char) => {
@@ -102,7 +102,7 @@ function CharacterRow({
 
   return (
     <div
-      className="rounded-xl border-[1.5px] bg-white transition-all"
+      className="rounded-2xl border-[1.5px] bg-white transition-all"
       style={{
         borderColor: hovered ? c.color : '#e5e7eb',
         boxShadow: hovered ? `0 4px 16px ${c.color}22` : 'none',
@@ -136,20 +136,20 @@ function CharacterRow({
           className="min-w-0 flex-1 cursor-pointer text-left"
         >
           <div className="mb-1 flex items-center gap-2">
-            <h3 className="font-serif text-[15px] font-semibold text-ink">
+            <h3 className="font-serif text-base font-semibold text-ink">
               {c.name}
             </h3>
             {c.pronouns && (
-              <span className="text-[12px] text-gray-400">· {c.pronouns}</span>
+              <span className="text-xs text-gray-400">· {c.pronouns}</span>
             )}
             {c.role && <Tag label={c.role} color={c.color} />}
           </div>
           {c.summary ? (
-            <p className="mb-1.5 text-[13px] leading-relaxed text-gray-600">
+            <p className="mb-1.5 text-sm leading-relaxed text-gray-600">
               {c.summary}
             </p>
           ) : (
-            <p className="mb-1.5 text-[13px] italic text-gray-400">
+            <p className="mb-1.5 text-sm italic text-gray-400">
               No summary yet — click to add one.
             </p>
           )}
@@ -158,7 +158,7 @@ function CharacterRow({
               {(c.traits ?? []).slice(0, 5).map((trait) => (
                 <span
                   key={trait}
-                  className="rounded-full px-2.5 py-0.5 text-[11px] font-medium"
+                  className="rounded-full px-2.5 py-0.5 text-2xs font-medium"
                   style={{
                     background: `${c.color}18`,
                     color: c.color,
@@ -169,7 +169,7 @@ function CharacterRow({
                 </span>
               ))}
               {(c.traits ?? []).length > 5 && (
-                <span className="text-[11px] text-gray-400">
+                <span className="text-2xs text-gray-400">
                   +{(c.traits ?? []).length - 5} more
                 </span>
               )}
@@ -189,7 +189,7 @@ function CharacterRow({
             aria-label={expanded ? 'Collapse scenes' : 'Expand scenes'}
             title={`${scenes.length} ${scenes.length === 1 ? 'scene' : 'scenes'}`}
           >
-            <span className="text-[11px]">
+            <span className="text-2xs">
               {scenes.length} {scenes.length === 1 ? 'scene' : 'scenes'}
             </span>
             <span
@@ -201,7 +201,7 @@ function CharacterRow({
           </button>
         )}
         {scenes.length === 0 && (
-          <span className="shrink-0 pt-1 text-[11px] text-gray-400">
+          <span className="shrink-0 pt-1 text-2xs text-gray-400">
             0 scenes
           </span>
         )}
@@ -228,7 +228,7 @@ function CharacterRow({
               return (
                 <li
                   key={scene.id}
-                  className="flex flex-col gap-0.5 rounded-lg px-2 py-1.5 text-[13px]"
+                  className="flex flex-col gap-0.5 rounded-lg px-2 py-1.5 text-sm"
                 >
                   <div className="flex items-baseline gap-2.5">
                     <span
@@ -239,7 +239,7 @@ function CharacterRow({
                     </span>
                     <span className="font-medium text-ink">{scene.title}</span>
                     {loc && (
-                      <span className="text-[11px] text-gray-400">
+                      <span className="text-2xs text-gray-400">
                         · {loc.name}
                       </span>
                     )}
@@ -247,7 +247,7 @@ function CharacterRow({
                   {charEvents.map((e) => (
                     <span
                       key={e.id}
-                      className="ml-7 text-[11px]"
+                      className="ml-7 text-2xs"
                       style={{ color: c.color }}
                     >
                       {formatArcEventLabel(e, project)}

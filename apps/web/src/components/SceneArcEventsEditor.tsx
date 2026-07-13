@@ -115,7 +115,7 @@ export function SceneArcEventsEditor({
                 value={event.note}
                 onChange={(e) => update(index, { note: e.target.value })}
                 placeholder="Describe this arc event…"
-                className="text-[13px]"
+                className="text-sm"
               />
             )}
           </div>
