@@ -17,7 +17,14 @@ export function AppHeader() {
           </Link>
           <span className="text-xs text-gray-400">creative writing</span>
         </div>
-        <div className="relative">
+        <div className="flex items-center gap-4">
+          <Link
+            to="/help"
+            className="text-sm text-gray-400 no-underline transition-colors hover:text-white"
+          >
+            Help
+          </Link>
+          <div className="relative">
           <button
             type="button"
             onClick={() => setOpen((o) => !o)}
@@ -41,6 +48,7 @@ export function AppHeader() {
               </button>
             </div>
           )}
+          </div>
         </div>
       </div>
     </div>

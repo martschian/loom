@@ -4,6 +4,7 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { AuthProvider } from '@/components/auth/AuthProvider'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { ForgotPasswordPage } from '@/pages/ForgotPasswordPage'
+import { HelpPage } from '@/pages/HelpPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { ProjectPage } from '@/pages/ProjectPage'
 import { ResetPasswordPage } from '@/pages/ResetPasswordPage'
@@ -50,6 +51,14 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <ProjectPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/help"
+              element={
+                <ProtectedRoute>
+                  <HelpPage />
                 </ProtectedRoute>
               }
             />
