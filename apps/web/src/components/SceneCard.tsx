@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Tag } from '@/components/ui/Tag'
 import { formatArcEventLabel, getSceneAccentColor } from '@/lib/scene-utils'
-import type { ProjectWithRelations, Scene } from '@/lib/types'
+import type { Character, ProjectWithRelations, Scene } from '@/lib/types'
 
 interface SceneCardProps {
   scene: Scene
@@ -11,6 +11,44 @@ interface SceneCardProps {
   isDragging?: boolean
   dragHandleRef?: (node: HTMLDivElement | null) => void
   dragHandleProps?: React.HTMLAttributes<HTMLDivElement>
+}
+
+interface CharacterChipProps {
+  character: Character
+  label: string
+  isPov: boolean
+}
+
+function CharacterChip({ character, label, isPov }: CharacterChipProps) {
+  const { color, name } = character
+  return (
+    <div
+      className="flex items-center gap-1 rounded-full py-0.5 pl-1.5 pr-2.5"
+      style={{
+        background: isPov ? `${color}28` : `${color}18`,
+        border: `${isPov ? '1.5px' : '1px'} solid ${isPov ? `${color}66` : `${color}33`}`,
+      }}
+    >
+      <div
+        className="flex h-4 w-4 items-center justify-center rounded-full text-[8px] font-bold text-white"
+        style={{ background: color }}
+      >
+        {name[0]}
+      </div>
+      <span className="text-2xs font-medium" style={{ color }}>
+        {label}
+      </span>
+      {isPov && (
+        <span
+          className="ml-0.5 text-[10px]"
+          title="POV character"
+          style={{ color }}
+        >
+          👁
+        </span>
+      )}
+    </div>
+  )
 }
 
 export function SceneCard({
@@ -79,10 +117,11 @@ export function SceneCard({
             const c = project.characters.find((ch) => ch.id === event.character_id)
             if (!c) return null
             return (
-              <Tag
+              <CharacterChip
                 key={`${event.character_id}-${event.sort_order}-${event.beat_id ?? event.note}`}
+                character={c}
                 label={formatArcEventLabel(event, project)}
-                color={c.color}
+                isPov={event.character_id === scene.pov_character_id}
               />
             )
           })}
@@ -90,40 +129,15 @@ export function SceneCard({
             <span className="text-2xs text-gray-400">+{extraEvents} more</span>
           )}
           {chars.map((c) => {
-            const isPov = c.id === scene.pov_character_id
             const hasEvent = scene.arc_events.some((e) => e.character_id === c.id)
             if (hasEvent) return null
             return (
-              <div
+              <CharacterChip
                 key={c.id}
-                className="flex items-center gap-1 rounded-full py-0.5 pl-1.5 pr-2.5"
-                style={{
-                  background: isPov ? `${c.color}28` : `${c.color}18`,
-                  border: `${isPov ? '1.5px' : '1px'} solid ${isPov ? `${c.color}66` : `${c.color}33`}`,
-                }}
-              >
-                <div
-                  className="flex h-4 w-4 items-center justify-center rounded-full text-[8px] font-bold text-white"
-                  style={{ background: c.color }}
-                >
-                  {c.name[0]}
-                </div>
-                <span
-                  className="text-2xs font-medium"
-                  style={{ color: c.color }}
-                >
-                  {c.name}
-                </span>
-                {isPov && (
-                  <span
-                    className="ml-0.5 text-[10px]"
-                    title="POV character"
-                    style={{ color: c.color }}
-                  >
-                    👁
-                  </span>
-                )}
-              </div>
+                character={c}
+                label={c.name}
+                isPov={c.id === scene.pov_character_id}
+              />
             )
           })}
           {scene.word_count > 0 && (

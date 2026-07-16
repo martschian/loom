@@ -185,15 +185,15 @@ function CharacterRow({
               e.stopPropagation()
               setExpanded((v) => !v)
             }}
-            className="flex shrink-0 cursor-pointer flex-col items-end gap-0.5 border-none bg-transparent p-1 text-gray-400 transition-colors hover:text-gray-600"
+            className="flex shrink-0 cursor-pointer flex-col items-end gap-1 border-none bg-transparent p-2 text-gray-600 transition-colors hover:text-ink"
             aria-label={expanded ? 'Collapse scenes' : 'Expand scenes'}
             title={`${scenes.length} ${scenes.length === 1 ? 'scene' : 'scenes'}`}
           >
-            <span className="text-2xs">
+            <span className="text-sm font-medium">
               {scenes.length} {scenes.length === 1 ? 'scene' : 'scenes'}
             </span>
             <span
-              className="text-[10px] transition-transform duration-200"
+              className="text-xl leading-none transition-transform duration-200"
               style={{ display: 'inline-block', transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
             >
               ▾
