@@ -137,7 +137,7 @@ supabase db push
 
 ### Supabase free tier keepalive
 
-Free Supabase projects pause after 7 days without database activity. A scheduled GitHub Actions workflow (`.github/workflows/supabase-keepalive.yml`) pings your project twice per week to prevent that.
+Free Supabase projects pause when they lack sufficient database activity over a rolling 7-day window. Supabase’s current guidance is that **a few database requests per day** is typically required — pings every few days can still trigger the warning email even when each run succeeds. A scheduled GitHub Actions workflow (`.github/workflows/supabase-keepalive.yml`) pings your project **every 6 hours** (4× daily) to prevent that.
 
 Add these **repository secrets** under GitHub → Settings → Secrets and variables → Actions (same values as the Vercel env vars):
 

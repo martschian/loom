@@ -1,6 +1,9 @@
 # Keep the production Supabase project active on the free tier.
-# Free projects pause after 7 days without database activity.
-# This workflow issues a lightweight PostgREST query twice per week.
+# Free projects pause when they lack sufficient database activity over 7 days.
+# Supabase docs (2026): "a few user requests to the database each day" is
+# typically required — twice-weekly pings leave 4–5 idle days and still trigger
+# the warning email even when each ping returns HTTP 200.
+# This workflow issues a lightweight PostgREST query every 6 hours (4×/day).
 #
 # Required repository secrets (same values as Vercel):
 #   SUPABASE_URL        — e.g. https://xxxx.supabase.co
@@ -10,8 +13,8 @@ name: Supabase keepalive
 
 on:
   schedule:
-    # Sunday and Wednesday at 12:00 UTC (well within the 7-day inactivity window)
-    - cron: '0 12 * * 0,3'
+    # Every 6 hours — meets Supabase's "few requests each day" guidance
+    - cron: '0 */6 * * *'
   workflow_dispatch:
 
 jobs:
